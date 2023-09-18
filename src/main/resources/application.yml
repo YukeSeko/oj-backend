@@ -1,5 +1,17 @@
 # 公共配置文件
 spring:
+  mail:
+    host: smtp.qq.com
+    username: 1286694258@qq.com
+    #QQ邮箱授权码-到qq邮箱获取
+    password: lqchtptbnfbngidj
+    properties:
+      mail:
+        smtp:
+          auth: true
+        starttls:
+          enable: true
+          required: true
   application:
     name: oj
   # 默认 dev 环境

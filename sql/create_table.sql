@@ -12,6 +12,7 @@ create table if not exists user
     id           bigint auto_increment comment 'id' primary key,
     userAccount  varchar(256)                           not null comment '账号',
     userPassword varchar(512)                           not null comment '密码',
+    email        varchar(256)                           not null comment '邮箱',
     unionId      varchar(256)                           null comment '微信开放平台id',
     mpOpenId     varchar(256)                           null comment '公众号openId',
     userName     varchar(256)                           null comment '用户昵称',
