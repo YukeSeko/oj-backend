@@ -72,14 +72,22 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         if (!userPassword.equals(checkPassword)) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "两次输入的密码不一致");
         }
-        // todo 校验邮箱和验证码是否相同、邮箱是否唯一
+        // 校验邮箱和验证码是否相同
+        String s = redisTemplate.opsForValue().get(email);
+        if (null == s){
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "验证码已过期，请重新获取！");
+        }
+        if (!emailCode.equals(s)){
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "验证码错误！");
+        }
         synchronized (userAccount.intern()) {
-            // 账户不能重复
+            // 账户、邮箱不能重复
             QueryWrapper<User> queryWrapper = new QueryWrapper<>();
             queryWrapper.eq("userAccount", userAccount);
+            queryWrapper.eq("email", email);
             long count = this.baseMapper.selectCount(queryWrapper);
             if (count > 0) {
-                throw new BusinessException(ErrorCode.PARAMS_ERROR, "账号重复");
+                throw new BusinessException(ErrorCode.PARAMS_ERROR, "账号或邮箱重复");
             }
             // 2. 加密
             String encryptPassword = DigestUtils.md5DigestAsHex((SALT + userPassword).getBytes());
@@ -87,6 +95,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             User user = new User();
             user.setUserAccount(userAccount);
             user.setUserPassword(encryptPassword);
+            user.setEmail(email);
             boolean saveResult = this.save(user);
             if (!saveResult) {
                 throw new BusinessException(ErrorCode.SYSTEM_ERROR, "注册失败，数据库错误");
