@@ -2,6 +2,8 @@ package com.wzy.oj.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.wzy.oj.common.BaseResponse;
+import com.wzy.oj.model.dto.user.UserLoginByMailRequest;
 import com.wzy.oj.model.dto.user.UserQueryRequest;
 import com.wzy.oj.model.entity.User;
 import com.wzy.oj.model.vo.LoginUserVO;
@@ -22,9 +24,11 @@ public interface UserService extends IService<User> {
      * @param userAccount   用户账户
      * @param userPassword  用户密码
      * @param checkPassword 校验密码
+     * @param email 邮箱
+     * @param emailCode 邮箱验证码
      * @return 新用户 id
      */
-    long userRegister(String userAccount, String userPassword, String checkPassword);
+    long userRegister(String userAccount, String userPassword, String checkPassword,String email, String emailCode);
 
     /**
      * 用户登录
@@ -116,4 +120,21 @@ public interface UserService extends IService<User> {
      */
     QueryWrapper<User> getQueryWrapper(UserQueryRequest userQueryRequest);
 
+    /**
+     * 发送邮箱验证码
+     *
+     * @param mail
+     * @return
+     */
+    BaseResponse<String> sendMailCode(String mail);
+
+
+    /**
+     * 通过邮箱进行登录
+     *
+     * @param mailRequest
+     * @param request
+     * @return
+     */
+    BaseResponse<LoginUserVO> loginByMail(UserLoginByMailRequest mailRequest, HttpServletRequest request);
 }

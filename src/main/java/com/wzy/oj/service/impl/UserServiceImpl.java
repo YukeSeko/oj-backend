@@ -5,31 +5,41 @@ import static com.wzy.oj.constant.UserConstant.USER_LOGIN_STATE;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.wzy.oj.common.BaseResponse;
 import com.wzy.oj.common.ErrorCode;
+import com.wzy.oj.common.ResultUtils;
 import com.wzy.oj.constant.CommonConstant;
 import com.wzy.oj.exception.BusinessException;
 import com.wzy.oj.mapper.UserMapper;
+import com.wzy.oj.model.dto.user.UserLoginByMailRequest;
 import com.wzy.oj.model.dto.user.UserQueryRequest;
 import com.wzy.oj.model.entity.User;
 import com.wzy.oj.model.enums.UserRoleEnum;
 import com.wzy.oj.model.vo.LoginUserVO;
 import com.wzy.oj.model.vo.UserVO;
 import com.wzy.oj.service.UserService;
+import com.wzy.oj.utils.MailUtils;
 import com.wzy.oj.utils.SqlUtils;
+
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+
 import lombok.extern.slf4j.Slf4j;
 import me.chanjar.weixin.common.bean.WxOAuth2UserInfo;
 import org.apache.commons.lang3.StringUtils;
+import org.checkerframework.checker.units.qual.A;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.DigestUtils;
 
 /**
  * 用户服务实现
- *
  */
 @Service
 @Slf4j
@@ -38,10 +48,16 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     /**
      * 盐值，混淆密码
      */
-    private static final String SALT = "yupi";
+    private static final String SALT = "YukeSeko";
+
+    @Autowired
+    private MailUtils mailUtils;
+
+    @Resource
+    private RedisTemplate<String,String> redisTemplate;
 
     @Override
-    public long userRegister(String userAccount, String userPassword, String checkPassword) {
+    public long userRegister(String userAccount, String userPassword, String checkPassword, String email, String emailCode) {
         // 1. 校验
         if (StringUtils.isAnyBlank(userAccount, userPassword, checkPassword)) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "参数为空");
@@ -56,6 +72,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         if (!userPassword.equals(checkPassword)) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "两次输入的密码不一致");
         }
+        // todo 校验邮箱和验证码是否相同、邮箱是否唯一
         synchronized (userAccount.intern()) {
             // 账户不能重复
             QueryWrapper<User> queryWrapper = new QueryWrapper<>();
@@ -266,5 +283,54 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         queryWrapper.orderBy(SqlUtils.validSortField(sortField), sortOrder.equals(CommonConstant.SORT_ORDER_ASC),
                 sortField);
         return queryWrapper;
+    }
+
+    /**
+     * 发送邮箱验证码
+     *
+     * @param mail
+     * @return
+     */
+    @Override
+    public BaseResponse<String> sendMailCode(String mail) {
+        //邮箱校验规则
+        if ((mail != null) && (!mail.isEmpty())) {
+            if (!Pattern.matches("^(\\w+([-.][A-Za-z0-9]+)*){3,18}@\\w+([-.][A-Za-z0-9]+)*\\.\\w+([-.][A-Za-z0-9]+)*$", mail)) {
+                throw new BusinessException(ErrorCode.PARAMS_ERROR, "请输入正确的邮箱！");
+            }
+        }
+        mailUtils.sendAuthCodeEmail(mail);
+        return ResultUtils.success(null);
+    }
+
+
+    /**
+     * 通过邮箱进行登录操作
+     *
+     * @param mailRequest
+     * @param request
+     * @return
+     */
+    @Override
+    public BaseResponse<LoginUserVO> loginByMail(UserLoginByMailRequest mailRequest, HttpServletRequest request) {
+        // 1. 校验
+        String mail = mailRequest.getMail();
+        String code = mailRequest.getMailCode();
+        if (StringUtils.isAnyBlank(mail, code)) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "参数为空");
+        }
+        String s = redisTemplate.opsForValue().get(mail);
+        if (null == s){
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "验证码已过期，请重新获取！");
+        }
+        if (!code.equals(s)){
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "验证码错误！");
+        }
+        // 查询数据库
+        QueryWrapper<User> queryWrapper = new QueryWrapper<User>().eq("mail", mail);
+        User user = this.baseMapper.selectOne(queryWrapper);
+        // 3. 记录用户的登录态
+        request.getSession().setAttribute(USER_LOGIN_STATE, user);
+        return ResultUtils.success(this.getLoginUserVO(user));
     }
 }

@@ -10,12 +10,7 @@ import com.wzy.oj.config.WxOpenConfig;
 import com.wzy.oj.constant.UserConstant;
 import com.wzy.oj.exception.BusinessException;
 import com.wzy.oj.exception.ThrowUtils;
-import com.wzy.oj.model.dto.user.UserAddRequest;
-import com.wzy.oj.model.dto.user.UserLoginRequest;
-import com.wzy.oj.model.dto.user.UserQueryRequest;
-import com.wzy.oj.model.dto.user.UserRegisterRequest;
-import com.wzy.oj.model.dto.user.UserUpdateMyRequest;
-import com.wzy.oj.model.dto.user.UserUpdateRequest;
+import com.wzy.oj.model.dto.user.*;
 import com.wzy.oj.model.entity.User;
 import com.wzy.oj.model.vo.LoginUserVO;
 import com.wzy.oj.model.vo.UserVO;
@@ -24,6 +19,8 @@ import java.util.List;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import me.chanjar.weixin.common.bean.WxOAuth2UserInfo;
 import me.chanjar.weixin.common.bean.oauth2.WxOAuth2AccessToken;
@@ -54,13 +51,21 @@ public class UserController {
 
     // region 登录相关
 
-    /**
-     * 用户注册
-     *
-     * @param userRegisterRequest
-     * @return
-     */
+    @PostMapping  ("/loginByMail")
+    @ApiOperation("通过邮箱进行登录")
+    public BaseResponse<LoginUserVO> loginByMail(@RequestBody UserLoginByMailRequest mailRequest , HttpServletRequest request) {
+        return userService.loginByMail(mailRequest,request);
+    }
+
+    @GetMapping ("/sendMailCode")
+    @ApiOperation("发送邮箱验证码")
+    public BaseResponse<String> sendMailCode(@RequestParam String mail) {
+        return userService.sendMailCode(mail);
+    }
+
+
     @PostMapping("/register")
+    @ApiOperation("用户注册")
     public BaseResponse<Long> userRegister(@RequestBody UserRegisterRequest userRegisterRequest) {
         if (userRegisterRequest == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
@@ -68,21 +73,17 @@ public class UserController {
         String userAccount = userRegisterRequest.getUserAccount();
         String userPassword = userRegisterRequest.getUserPassword();
         String checkPassword = userRegisterRequest.getCheckPassword();
-        if (StringUtils.isAnyBlank(userAccount, userPassword, checkPassword)) {
+        String email = userRegisterRequest.getEmail();
+        String emailCode = userRegisterRequest.getEmailCode();
+        if (StringUtils.isAnyBlank(userAccount, userPassword, checkPassword,email,emailCode)) {
             return null;
         }
-        long result = userService.userRegister(userAccount, userPassword, checkPassword);
+        long result = userService.userRegister(userAccount, userPassword, checkPassword,email,emailCode);
         return ResultUtils.success(result);
     }
 
-    /**
-     * 用户登录
-     *
-     * @param userLoginRequest
-     * @param request
-     * @return
-     */
     @PostMapping("/login")
+    @ApiOperation("用户登录")
     public BaseResponse<LoginUserVO> userLogin(@RequestBody UserLoginRequest userLoginRequest, HttpServletRequest request) {
         if (userLoginRequest == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
