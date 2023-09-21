@@ -15,13 +15,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 @RestController
-//@RequestMapping("/question_submit")
+@RequestMapping("/question_submit")
 @Slf4j
 public class QuestionSubmitController {
     @Resource
@@ -37,7 +38,7 @@ public class QuestionSubmitController {
      * @param request
      * @return 提交记录的 id
      */
-    @PostMapping("/")
+    @PostMapping("/doQuestionSubmit")
     public BaseResponse<Long> doQuestionSubmit(@RequestBody QuestionSubmitAddRequest questionSubmitAddRequest,
                                                HttpServletRequest request) {
         if (questionSubmitAddRequest == null || questionSubmitAddRequest.getQuestionId() <= 0) {
