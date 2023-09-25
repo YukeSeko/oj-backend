@@ -1,0 +1,18 @@
+package com.wzy.oj.judge;
+
+import com.wzy.oj.model.entity.QuestionSubmit;
+
+/**
+ * 判题服务
+ */
+public interface JudgeService {
+
+    /**
+     * 判题
+     *
+     * @param questionSubmitId
+     * @return
+     */
+    QuestionSubmit doJudge(long questionSubmitId);
+
+}
