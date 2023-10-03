@@ -1,0 +1,35 @@
+server:
+  port: 88
+spring:
+  application:
+    name: oj-gateway
+  main:
+    allow-circular-references: true
+  cloud:
+    nacos:
+      discovery:
+        server-addr: localhost:8848
+        namespace: #nacos名称空间
+        password: nacos
+    gateway:
+      enabled: true
+      discovery:
+        locator:
+          lower-case-service-id: true
+      routes:
+        - id: apiInterface
+          uri: lb://api-interface
+          predicates:
+            - Path=/api/main
+        - id: thirdParty
+          uri: lb://api-third-party
+          predicates:
+            - Path=/api/oauth/**,/api/alipay/**
+        - id: apiOrder
+          uri: lb://api-order
+          predicates:
+            - Path=/api/order/**
+        - id: api
+          uri: lb://api
+          predicates:
+            - Path=/api/**
