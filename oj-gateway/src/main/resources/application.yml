@@ -9,7 +9,7 @@ spring:
     nacos:
       discovery:
         server-addr: localhost:8848
-        namespace: #nacos名称空间
+        namespace: 844c4ae7-0b2a-4dcb-b82a-db91e3ce24af #nacos名称空间
         password: nacos
     gateway:
       enabled: true
@@ -17,10 +17,10 @@ spring:
         locator:
           lower-case-service-id: true
       routes:
-        - id: apiInterface
-          uri: lb://api-interface
+        - id: userService
+          uri: lb://oj-user-service
           predicates:
-            - Path=/api/main
+            - Path=/api/user/**
         - id: thirdParty
           uri: lb://api-third-party
           predicates:

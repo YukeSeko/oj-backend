@@ -1,0 +1,13 @@
+server:
+  port: 8010
+spring:
+  application:
+    name: oj-judge-service
+  main:
+    allow-circular-references: true
+  cloud:
+    nacos:
+      discovery:
+        server-addr: localhost:8848
+        namespace: 844c4ae7-0b2a-4dcb-b82a-db91e3ce24af #nacos名称空间
+        password: nacos
