@@ -14,20 +14,18 @@ import java.util.concurrent.TimeUnit;
  * @author 王灼宇
  * @Since 2023/9/18 15:33
  */
-@Component
 public class MailUtils {
 
+    @Resource
+    private static RedisTemplate<String,String> redisTemplate;
 
     @Resource
-    private RedisTemplate<String,String> redisTemplate;
-
-    @Autowired
-    private ThreadPoolExecutor executor;
+    private static ThreadPoolExecutor executor;
 
     //标题
     private static String subject = "YukeSeko在线判题OJ系统";
 
-    public void sendAuthCodeEmail(String email) {
+    public static void sendAuthCodeEmail(String email) {
         try {
             String code = randomCode();
             String content = "尊敬的用户:你好! 你的验证码为:  " + code + "  (有效期为5分钟)";

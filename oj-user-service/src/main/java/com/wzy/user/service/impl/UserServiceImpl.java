@@ -1,7 +1,6 @@
 package com.wzy.user.service.impl;
 
 
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -51,11 +50,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
      */
     private static final String SALT = "YukeSeko";
 
-    @Autowired
-    private MailUtils mailUtils;
+    private static MailUtils mailUtils = new MailUtils();
 
     @Resource
-    private RedisTemplate<String,String> redisTemplate;
+    private RedisTemplate<String, String> redisTemplate;
 
     @Override
     public long userRegister(String userAccount, String userPassword, String checkPassword, String email, String emailCode) {
@@ -75,10 +73,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         }
         // 校验邮箱和验证码是否相同
         String s = redisTemplate.opsForValue().get(email);
-        if (null == s){
+        if (null == s) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "验证码已过期，请重新获取！");
         }
-        if (!emailCode.equals(s)){
+        if (!emailCode.equals(s)) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "验证码错误！");
         }
         synchronized (userAccount.intern()) {
@@ -330,10 +328,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "参数为空");
         }
         String s = redisTemplate.opsForValue().get(mail);
-        if (null == s){
+        if (null == s) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "验证码已过期，请重新获取！");
         }
-        if (!code.equals(s)){
+        if (!code.equals(s)) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "验证码错误！");
         }
         // 查询数据库

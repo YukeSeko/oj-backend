@@ -27,9 +27,13 @@ import java.util.stream.Collectors;
 @Service
 public class JudgeServiceImpl implements JudgeService{
 
+
+    //todo 使用Feign远程进行调用
     @Resource
     private QuestionService questionService;
 
+
+    //todo 使用Feign远程进行调用
     @Resource
     private QuestionSubmitService questionSubmitService;
 
