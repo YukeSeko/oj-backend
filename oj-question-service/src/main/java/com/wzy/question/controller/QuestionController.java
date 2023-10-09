@@ -10,6 +10,7 @@ import com.wzy.common.common.ResultUtils;
 import com.wzy.common.constant.UserConstant;
 import com.wzy.common.exception.BusinessException;
 import com.wzy.common.exception.ThrowUtils;
+import com.wzy.common.feign.UserFeignClient;
 import com.wzy.common.model.dto.question.*;
 import com.wzy.common.model.dto.questionsubmit.QuestionSubmitAddRequest;
 import com.wzy.common.model.dto.questionsubmit.QuestionSubmitQueryRequest;
@@ -19,6 +20,7 @@ import com.wzy.common.model.entity.User;
 import com.wzy.common.model.vo.QuestionSubmitVO;
 import com.wzy.common.model.vo.QuestionVO;
 import com.wzy.question.service.QuestionService;
+import com.wzy.question.service.QuestionSubmitService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.web.bind.annotation.*;
@@ -40,7 +42,7 @@ public class QuestionController {
     private QuestionService questionService;
 
     @Resource
-    private UserService userService;
+    private UserFeignClient userService;
 
     @Resource
     private QuestionSubmitService questionSubmitService;
@@ -104,7 +106,7 @@ public class QuestionController {
         Question oldQuestion = questionService.getById(id);
         ThrowUtils.throwIf(oldQuestion == null, ErrorCode.NOT_FOUND_ERROR);
         // 仅本人或管理员可删除
-        if (!oldQuestion.getUserId().equals(user.getId()) && !userService.isAdmin(request)) {
+        if (!oldQuestion.getUserId().equals(user.getId()) && !userService.isAdmin(user)) {
             throw new BusinessException(ErrorCode.NO_AUTH_ERROR);
         }
         boolean b = questionService.removeById(id);

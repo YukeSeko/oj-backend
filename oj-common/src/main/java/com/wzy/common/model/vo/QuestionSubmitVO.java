@@ -1,8 +1,9 @@
 package com.wzy.common.model.vo;
 
 import cn.hutool.json.JSONUtil;
-import com.wzy.oj.model.entity.JudgeInfo;
-import com.wzy.oj.model.entity.QuestionSubmit;
+
+import com.wzy.common.model.entity.JudgeInfo;
+import com.wzy.common.model.entity.QuestionSubmit;
 import lombok.Data;
 import org.springframework.beans.BeanUtils;
 

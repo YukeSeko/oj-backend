@@ -4,6 +4,7 @@ import cn.hutool.json.JSONUtil;
 
 import com.wzy.common.common.ErrorCode;
 import com.wzy.common.exception.BusinessException;
+import com.wzy.common.feign.QuestionFeignClient;
 import com.wzy.common.model.dto.question.JudgeCase;
 import com.wzy.common.model.entity.JudgeInfo;
 import com.wzy.common.model.entity.Question;
@@ -28,14 +29,10 @@ import java.util.stream.Collectors;
 public class JudgeServiceImpl implements JudgeService{
 
 
-    //todo 使用Feign远程进行调用
-    @Resource
-    private QuestionService questionService;
 
-
-    //todo 使用Feign远程进行调用
     @Resource
-    private QuestionSubmitService questionSubmitService;
+    private QuestionFeignClient questionService;
+
 
     @Value("${codesandbox.type:example}")
     private String type;
@@ -48,12 +45,12 @@ public class JudgeServiceImpl implements JudgeService{
      */
     @Override
     public QuestionSubmit doJudge(long questionSubmitId) {
-        QuestionSubmit questionSubmit = questionSubmitService.getById(questionSubmitId);
+        QuestionSubmit questionSubmit = questionService.getQuestionSubmitById(questionSubmitId);
         if (questionSubmit == null) {
             throw new BusinessException(ErrorCode.NOT_FOUND_ERROR, "提交信息不存在");
         }
         Long questionId = questionSubmit.getQuestionId();
-        Question question = questionService.getById(questionId);
+        Question question = questionService.getQuestionById(questionId);
         if (question == null) {
             throw new BusinessException(ErrorCode.NOT_FOUND_ERROR, "题目不存在");
         }
@@ -65,7 +62,7 @@ public class JudgeServiceImpl implements JudgeService{
         QuestionSubmit questionSubmitUpdate = new QuestionSubmit();
         questionSubmitUpdate.setId(questionSubmitId);
         questionSubmitUpdate.setStatus(QuestionSubmitStatusEnum.RUNNING.getValue());
-        boolean update = questionSubmitService.updateById(questionSubmitUpdate);
+        boolean update = questionService.updateQuestionSubmitById(questionSubmitUpdate);
         if (!update) {
             throw new BusinessException(ErrorCode.SYSTEM_ERROR, "题目状态更新错误");
         }
@@ -99,11 +96,11 @@ public class JudgeServiceImpl implements JudgeService{
         //todo 判题状态不一定为成功
         questionSubmitUpdate.setStatus(QuestionSubmitStatusEnum.SUCCEED.getValue());
         questionSubmitUpdate.setJudgeInfo(JSONUtil.toJsonStr(judgeInfo));
-        update = questionSubmitService.updateById(questionSubmitUpdate);
+        update = questionService.updateQuestionSubmitById(questionSubmitUpdate);
         if (!update) {
             throw new BusinessException(ErrorCode.SYSTEM_ERROR, "题目状态更新错误");
         }
         //todo 更新完状态后，需要修改question中的题目通过率
-        return questionSubmitService.getById(questionId);
+        return questionService.getQuestionSubmitById(questionId);
     }
 }

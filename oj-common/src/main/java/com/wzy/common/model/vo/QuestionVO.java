@@ -1,8 +1,9 @@
 package com.wzy.common.model.vo;
 
 import cn.hutool.json.JSONUtil;
-import com.wzy.oj.model.dto.question.JudgeConfig;
-import com.wzy.oj.model.entity.Question;
+
+import com.wzy.common.model.dto.question.JudgeConfig;
+import com.wzy.common.model.entity.Question;
 import lombok.Data;
 import org.springframework.beans.BeanUtils;
 

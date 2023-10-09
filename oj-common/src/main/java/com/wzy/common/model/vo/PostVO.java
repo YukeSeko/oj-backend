@@ -2,10 +2,12 @@ package com.wzy.common.model.vo;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import com.wzy.oj.model.entity.Post;
+
 import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
+
+import com.wzy.common.model.entity.Post;
 import lombok.Data;
 import org.springframework.beans.BeanUtils;
 

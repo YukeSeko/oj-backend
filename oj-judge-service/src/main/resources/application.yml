@@ -12,5 +12,6 @@ spring:
         namespace: 844c4ae7-0b2a-4dcb-b82a-db91e3ce24af #nacos名称空间
         password: nacos
 
+# 配置执行代码的方式
 codesandbox:
   type: remote

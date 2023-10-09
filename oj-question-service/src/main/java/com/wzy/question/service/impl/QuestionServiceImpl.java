@@ -8,6 +8,7 @@ import com.wzy.common.common.ErrorCode;
 import com.wzy.common.constant.CommonConstant;
 import com.wzy.common.exception.BusinessException;
 import com.wzy.common.exception.ThrowUtils;
+import com.wzy.common.feign.UserFeignClient;
 import com.wzy.common.model.dto.question.QuestionQueryRequest;
 import com.wzy.common.model.entity.Question;
 import com.wzy.common.model.entity.User;
@@ -34,7 +35,7 @@ public class QuestionServiceImpl extends ServiceImpl<QuestionMapper, Question>
 
 
     @Resource
-    private UserService userService;
+    private UserFeignClient userService;
 
     /**
      * 校验题目是否合法

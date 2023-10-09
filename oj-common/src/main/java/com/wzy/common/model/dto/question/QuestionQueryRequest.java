@@ -1,6 +1,7 @@
 package com.wzy.common.model.dto.question;
 
-import com.wzy.oj.common.PageRequest;
+
+import com.wzy.common.common.PageRequest;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
