@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.wzy.common.common.ErrorCode;
 import com.wzy.common.constant.CommonConstant;
+import com.wzy.common.constant.RabbitMqConstant;
 import com.wzy.common.exception.BusinessException;
 import com.wzy.common.feign.UserFeignClient;
 import com.wzy.common.model.dto.questionsubmit.QuestionSubmitAddRequest;
@@ -18,6 +19,7 @@ import com.wzy.common.model.enums.QuestionSubmitStatusEnum;
 import com.wzy.common.model.vo.QuestionSubmitVO;
 import com.wzy.common.utils.SqlUtils;
 import com.wzy.question.mapper.QuestionSubmitMapper;
+import com.wzy.question.rabbitmq.MessageProducer;
 import com.wzy.question.service.QuestionService;
 import com.wzy.question.service.QuestionSubmitService;
 import org.apache.commons.collections4.CollectionUtils;
@@ -33,14 +35,16 @@ import java.util.stream.Collectors;
 
 @Service
 public class QuestionSubmitServiceImpl extends ServiceImpl<QuestionSubmitMapper, QuestionSubmit>
-    implements QuestionSubmitService {
-    
+        implements QuestionSubmitService {
+
     @Resource
     private QuestionService questionService;
 
     @Resource
     private UserFeignClient userService;
 
+    @Resource
+    private MessageProducer messageProducer;
 
     /**
      * 提交题目
@@ -75,15 +79,16 @@ public class QuestionSubmitServiceImpl extends ServiceImpl<QuestionSubmitMapper,
         questionSubmit.setStatus(QuestionSubmitStatusEnum.WAITING.getValue());
         questionSubmit.setJudgeInfo("{}");
         boolean save = this.save(questionSubmit);
-        if (!save){
+        if (!save) {
             throw new BusinessException(ErrorCode.SYSTEM_ERROR, "数据插入失败");
         }
         Long questionSubmitId = questionSubmit.getId();
-        // 执行判题服务
-        CompletableFuture.runAsync(() -> {
-            //todo 向mq中发送消息
-            judgeService.doJudge(questionSubmitId);
-        });
+        // 执行判题服务：向mq中发送消息
+        messageProducer.sendMessage(RabbitMqConstant.EXCHANGE, RabbitMqConstant.ROUTING_KEY, String.valueOf(questionSubmitId));
+//        CompletableFuture.runAsync(() -> {
+//            //todo 向mq中发送消息
+//            judgeService.doJudge(questionSubmitId);
+//        });
         return questionSubmitId;
     }
 

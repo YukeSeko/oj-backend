@@ -1,8 +1,10 @@
 package com.wzy.common.model.dto.postfavour;
 
-import com.wzy.oj.common.PageRequest;
-import com.wzy.oj.model.dto.post.PostQueryRequest;
+
 import java.io.Serializable;
+
+import com.wzy.common.common.PageRequest;
+import com.wzy.common.model.dto.post.PostQueryRequest;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 

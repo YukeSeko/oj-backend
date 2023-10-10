@@ -1,8 +1,9 @@
 package com.wzy.common.model.dto.post;
 
-import com.wzy.oj.common.PageRequest;
 import java.io.Serializable;
 import java.util.List;
+
+import com.wzy.common.common.PageRequest;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
