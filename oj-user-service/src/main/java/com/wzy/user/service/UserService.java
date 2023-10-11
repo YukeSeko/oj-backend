@@ -11,7 +11,7 @@ import com.wzy.common.model.dto.user.UserQueryRequest;
 import com.wzy.common.model.entity.User;
 import com.wzy.common.model.vo.LoginUserVO;
 import com.wzy.common.model.vo.UserVO;
-import me.chanjar.weixin.common.bean.WxOAuth2UserInfo;
+
 
 import java.util.List;
 
@@ -43,14 +43,6 @@ public interface UserService extends IService<User> {
      */
     LoginUserVO userLogin(String userAccount, String userPassword, HttpServletRequest request);
 
-    /**
-     * 用户登录（微信开放平台）
-     *
-     * @param wxOAuth2UserInfo 从微信获取的用户信息
-     * @param request
-     * @return 脱敏后的用户信息
-     */
-    LoginUserVO userLoginByMpOpen(WxOAuth2UserInfo wxOAuth2UserInfo, HttpServletRequest request);
 
     /**
      * 获取当前登录用户

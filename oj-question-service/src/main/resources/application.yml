@@ -5,6 +5,10 @@ spring:
     name: oj-question-service
   main:
     allow-circular-references: true
+  # 支持 swagger3
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
   cloud:
     nacos:
       discovery:
