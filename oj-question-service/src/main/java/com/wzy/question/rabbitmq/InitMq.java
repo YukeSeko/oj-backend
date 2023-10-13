@@ -5,9 +5,6 @@ import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
 import com.wzy.common.constant.RabbitMqConstant;
 
-import java.io.IOException;
-import java.util.concurrent.TimeoutException;
-
 /**
  * @author 王灼宇
  * @Since 2023/10/10 15:40
@@ -19,11 +16,11 @@ public class InitMq {
         try {
             Connection connection = factory.newConnection();
             Channel channel = connection.createChannel();
-            channel.exchangeDeclare(RabbitMqConstant.EXCHANGE,"direct",true);
+            channel.exchangeDeclare(RabbitMqConstant.exchange,"direct",true);
 
             //创建队列
-            channel.queueDeclare(RabbitMqConstant.QUEUE_NAME,true,false,false,null);
-            channel.queueBind(RabbitMqConstant.QUEUE_NAME,RabbitMqConstant.EXCHANGE,RabbitMqConstant.ROUTING_KEY);
+            channel.queueDeclare(RabbitMqConstant.queue_name,true,false,false,null);
+            channel.queueBind(RabbitMqConstant.queue_name,RabbitMqConstant.exchange,RabbitMqConstant.routing_key);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

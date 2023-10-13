@@ -25,12 +25,10 @@ import com.wzy.question.service.QuestionSubmitService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 @Service
@@ -84,7 +82,7 @@ public class QuestionSubmitServiceImpl extends ServiceImpl<QuestionSubmitMapper,
         }
         Long questionSubmitId = questionSubmit.getId();
         // 执行判题服务：向mq中发送消息
-        messageProducer.sendMessage(RabbitMqConstant.EXCHANGE, RabbitMqConstant.ROUTING_KEY, String.valueOf(questionSubmitId));
+        messageProducer.sendMessage(RabbitMqConstant.exchange, RabbitMqConstant.routing_key, String.valueOf(questionSubmitId));
 //        CompletableFuture.runAsync(() -> {
 //            //todo 向mq中发送消息
 //            judgeService.doJudge(questionSubmitId);
