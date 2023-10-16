@@ -11,7 +11,7 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
  */
 @SpringBootApplication
 @EnableDiscoveryClient
-@EnableFeignClients
+@EnableFeignClients(basePackages = "com.wzy.common.feign")
 public class OjJudgeServiceApplication {
     public static void main(String[] args) {
         SpringApplication.run(OjJudgeServiceApplication.class, args);

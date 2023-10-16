@@ -30,7 +30,7 @@ public class JudgeListener {
             channel.basicAck(deliveryTag, false);
         } catch (Exception e) {
             //发生异常，重新入队
-            channel.basicNack(deliveryTag, false, true);
+            channel.basicNack(deliveryTag, false, false);
         }
     }
 

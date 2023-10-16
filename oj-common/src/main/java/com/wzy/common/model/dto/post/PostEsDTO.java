@@ -1,11 +1,8 @@
 package com.wzy.common.model.dto.post;
 
-import com.google.common.reflect.TypeToken;
-import com.google.gson.Gson;
-import java.io.Serializable;
-import java.util.Date;
-import java.util.List;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.wzy.common.model.entity.Post;
 import lombok.Data;
 import org.apache.commons.collections4.CollectionUtils;
@@ -14,6 +11,10 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.elasticsearch.annotations.Field;
 import org.springframework.data.elasticsearch.annotations.FieldType;
+
+import java.io.Serializable;
+import java.util.Date;
+import java.util.List;
 
 /**
  * 帖子 ES 包装类

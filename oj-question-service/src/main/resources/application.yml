@@ -1,5 +1,10 @@
 server:
   port: 8020
+  servlet:
+    context-path: /api/question
+    session:
+      cookie:
+        path: /api
 spring:
   application:
     name: oj-question-service
@@ -42,3 +47,7 @@ mybatis-plus:
       logic-delete-field: isDelete # 全局逻辑删除的实体字段名
       logic-delete-value: 1 # 逻辑已删除值（默认为 1）
       logic-not-delete-value: 0 # 逻辑未删除值（默认为 0）
+
+
+knife4j:
+  enable: true
