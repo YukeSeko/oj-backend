@@ -6,14 +6,12 @@ import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import com.wzy.common.common.BaseResponse;
 import com.wzy.common.feign.UserFeignClient;
-import com.wzy.common.model.entity.User;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.server.ServletServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.stereotype.Component;
@@ -21,9 +19,7 @@ import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
 import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -51,7 +47,7 @@ public class CustomGlobalFilter implements GlobalFilter, Ordered {
         ServerHttpResponse response = exchange.getResponse();
         String path = request.getPath().toString();
         // 1. 打印请求日志
-        logPrint(request);
+        //logPrint(request);
         //查询用户是否登录时、用户登录等请求，直接放行
         List<Boolean> collect = PATH_WHITE_LIST.stream().map(item -> {
             AntPathMatcher antPathMatcher = new AntPathMatcher();
@@ -68,29 +64,19 @@ public class CustomGlobalFilter implements GlobalFilter, Ordered {
         HttpHeaders headers = request.getHeaders();
         String cookie = headers.getFirst("Cookie");
         if (collectLogin.contains(true)) {
-            //拿到HttpServletRequest对象，调用feign判断用户是否登录
-            ServletServerHttpRequest serverHttpRequest = (ServletServerHttpRequest) request;
-            HttpServletRequest servletRequest = serverHttpRequest.getServletRequest();
-            User loginUser = userFeignClient.getLoginUser(servletRequest);
-            if (null == loginUser) {
+            String loginUserVo = HttpRequest.get("http://localhost:8030/api/user/get/login")
+                    .header("Cookie", cookie)
+                    .timeout(20000)
+                    .execute().body();
+            JSONObject entries = JSONUtil.parseObj(loginUserVo);
+            BaseResponse baseResponse = JSONUtil.toBean(entries, BaseResponse.class);
+            Object data = baseResponse.getData();
+            if (null == data) {
                 response.setStatusCode(HttpStatus.FORBIDDEN);
                 return response.setComplete();
             } else {
                 return chain.filter(exchange);
             }
-//            String loginUserVo = HttpRequest.get("http://localhost:8030/api/user/get/login")
-//                    .header("Cookie", cookie)
-//                    .timeout(20000)
-//                    .execute().body();
-//            JSONObject entries = JSONUtil.parseObj(loginUserVo);
-//            BaseResponse baseResponse = JSONUtil.toBean(entries, BaseResponse.class);
-//            Object data = baseResponse.getData();
-//            if (null == data) {
-//                response.setStatusCode(HttpStatus.FORBIDDEN);
-//                return response.setComplete();
-//            } else {
-//                return chain.filter(exchange);
-//            }
         }
         return chain.filter(exchange);
     }

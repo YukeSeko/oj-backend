@@ -16,10 +16,6 @@ public class CodeSandboxFactory {
     // 私有静态成员变量保存实例
     private static CodeSandBox instance;
 
-    // 私有构造函数
-    private CodeSandboxFactory() {
-    }
-
 
     /**
      * 创建代码沙箱实例
@@ -27,16 +23,16 @@ public class CodeSandboxFactory {
      * @param type 沙箱类型
      * @return
      */
-    public static CodeSandBox newInstance(String type) {
+    public CodeSandBox newInstance(String type) {
         synchronized (CodeSandboxFactory.class) {
             if (instance == null) {
                 switch (type) {
-                    case "example":
-                        instance = new ExampleCodeSandbox();
                     case "remote":
                         instance = new RemoteCodeSandbox();
+                        break;
                     case "thirdParty":
                         instance = new ThirdPartyCodeSandbox();
+                        break;
                     default:
                         instance = new ExampleCodeSandbox();
                 }

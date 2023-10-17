@@ -67,7 +67,8 @@ public class JudgeServiceImpl implements JudgeService{
             throw new BusinessException(ErrorCode.SYSTEM_ERROR, "题目状态更新错误");
         }
         // 4）调用沙箱，获取到执行结果
-        CodeSandBox codeSandBox = CodeSandboxFactory.newInstance(type);
+        CodeSandboxFactory codeSandboxFactory = new CodeSandboxFactory();
+        CodeSandBox codeSandBox = codeSandboxFactory.newInstance(type);
         codeSandBox = new CodeSandboxProxy(codeSandBox);
         String language = questionSubmit.getLanguage();
         String code = questionSubmit.getCode();
