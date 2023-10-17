@@ -30,7 +30,6 @@ public class MessageProducer {
      * @param message
      */
     public void sendMessage(String exchange, String routingKey, String message) {
-        redisTemplate.opsForValue().set(RabbitMqConstant.redis_key +message,RabbitMqConstant.redis_deliver_fail);
         rabbitTemplate.convertAndSend(exchange, routingKey, message);
         rabbitTemplate.setConfirmCallback((correlationData, b, s) -> {
             if (b) {
@@ -39,6 +38,7 @@ public class MessageProducer {
                 redisTemplate.opsForValue().set(RabbitMqConstant.redis_key +message,RabbitMqConstant.redis_deliver_success);
             } else {
                 log.info("消息发送失败：" + correlationData + ", 出现异常：" + s);
+                redisTemplate.opsForValue().set(RabbitMqConstant.redis_key +message,RabbitMqConstant.redis_deliver_fail);
             }
         });
     }

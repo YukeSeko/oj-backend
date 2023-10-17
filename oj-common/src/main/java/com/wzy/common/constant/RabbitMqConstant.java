@@ -30,10 +30,10 @@ public interface RabbitMqConstant {
     /**
      * 消息投递redis成功状态
      */
-    String redis_deliver_success = "success";
+    String redis_deliver_success = "deliver_success";
 
     /**
      * 消息投递redis失败状态
      */
-    String redis_deliver_fail = "fail";
+    String redis_deliver_fail = "deliver_failed";
 }

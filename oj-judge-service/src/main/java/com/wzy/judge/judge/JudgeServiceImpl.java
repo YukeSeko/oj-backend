@@ -9,6 +9,7 @@ import com.wzy.common.model.dto.question.JudgeCase;
 import com.wzy.common.model.entity.JudgeInfo;
 import com.wzy.common.model.entity.Question;
 import com.wzy.common.model.entity.QuestionSubmit;
+import com.wzy.common.model.enums.JudgeInfoMessageEnum;
 import com.wzy.common.model.enums.QuestionSubmitStatusEnum;
 import com.wzy.judge.judge.codesandbox.CodeSandBox;
 import com.wzy.judge.judge.codesandbox.CodeSandboxFactory;
@@ -20,6 +21,7 @@ import com.wzy.judge.judge.strategy.JudgeContext;
 import com.wzy.judge.judge.strategy.JudgeStrategy;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.List;
@@ -44,6 +46,7 @@ public class JudgeServiceImpl implements JudgeService{
      * @return
      */
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public QuestionSubmit doJudge(long questionSubmitId) {
         QuestionSubmit questionSubmit = questionService.getQuestionSubmitById(questionSubmitId);
         if (questionSubmit == null) {
@@ -94,8 +97,13 @@ public class JudgeServiceImpl implements JudgeService{
         //修改判题结果
         questionSubmitUpdate = new QuestionSubmit();
         questionSubmitUpdate.setId(questionSubmitId);
-        //todo 判题状态不一定为成功
-        questionSubmitUpdate.setStatus(QuestionSubmitStatusEnum.SUCCEED.getValue());
+        if(judgeInfo.getMessage().equals(JudgeInfoMessageEnum.ACCEPTED.getValue())){
+            //判题成功
+            questionSubmitUpdate.setStatus(QuestionSubmitStatusEnum.SUCCEED.getValue());
+        }else {
+            //其他清空均为判题失败
+            questionSubmitUpdate.setStatus(QuestionSubmitStatusEnum.FAILED.getValue());
+        }
         questionSubmitUpdate.setJudgeInfo(JSONUtil.toJsonStr(judgeInfo));
         update = questionService.updateQuestionSubmitById(questionSubmitUpdate);
         if (!update) {
