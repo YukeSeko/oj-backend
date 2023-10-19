@@ -36,7 +36,7 @@ public class CustomGlobalFilter implements GlobalFilter, Ordered {
     @Resource
     private UserFeignClient userFeignClient;
 
-    private static final List<String> PATH_WHITE_LIST = Arrays.asList("/api/user/**", "/api/doc/**", "/api/user/v2/**", "/api/question/v2/**");
+    private static final List<String> PATH_WHITE_LIST = Arrays.asList("/api/user/**", "/api/doc/**", "/api/user/v2/**", "/api/question/v2/**","/api/question/list/page/vo");
 
     //需要登录才能进行访问
     private static final List<String> PATH_LOGIN_LIST = Arrays.asList("/api/question/**", "/api/judge/**");
