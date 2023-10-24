@@ -4,6 +4,7 @@ package com.wzy.question.service;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.wzy.common.common.BaseResponse;
 import com.wzy.common.model.dto.questionsubmit.QuestionSubmitAddRequest;
 import com.wzy.common.model.dto.questionsubmit.QuestionSubmitQueryRequest;
 import com.wzy.common.model.entity.QuestionSubmit;
@@ -46,4 +47,11 @@ public interface QuestionSubmitService extends IService<QuestionSubmit> {
      * @return
      */
     Page<QuestionSubmitVO> getQuestionSubmitVOPage(Page<QuestionSubmit> questionSubmitPage, User loginUser);
+
+    /**
+     * 获取前端个人数据总览
+     * @param loginUser
+     * @return
+     */
+    BaseResponse<String> getPersonalData(User loginUser);
 }

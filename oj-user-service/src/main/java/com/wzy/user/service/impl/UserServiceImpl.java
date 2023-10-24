@@ -268,7 +268,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     @Override
     public BaseResponse<String> sendMailCode(String mail) {
         //邮箱校验规则
-        if ((mail != null) && (!mail.isEmpty())) {
+        if ((mail != null) && (!mail.isEmpty()) && !mail.equals("")) {
             if (!Pattern.matches("^(\\w+([-.][A-Za-z0-9]+)*){3,18}@\\w+([-.][A-Za-z0-9]+)*\\.\\w+([-.][A-Za-z0-9]+)*$", mail)) {
                 throw new BusinessException(ErrorCode.PARAMS_ERROR, "请输入正确的邮箱！");
             }

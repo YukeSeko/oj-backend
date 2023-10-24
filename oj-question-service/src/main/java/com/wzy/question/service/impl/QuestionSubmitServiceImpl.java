@@ -1,34 +1,43 @@
 package com.wzy.question.service.impl;
 
+import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.wzy.common.common.BaseResponse;
 import com.wzy.common.common.ErrorCode;
+import com.wzy.common.common.ResultUtils;
 import com.wzy.common.constant.CommonConstant;
 import com.wzy.common.constant.RabbitMqConstant;
 import com.wzy.common.exception.BusinessException;
 import com.wzy.common.feign.UserFeignClient;
 import com.wzy.common.model.dto.questionsubmit.QuestionSubmitAddRequest;
 import com.wzy.common.model.dto.questionsubmit.QuestionSubmitQueryRequest;
+import com.wzy.common.model.entity.JudgeInfo;
 import com.wzy.common.model.entity.Question;
 import com.wzy.common.model.entity.QuestionSubmit;
 import com.wzy.common.model.entity.User;
+import com.wzy.common.model.enums.JudgeInfoMessageEnum;
 import com.wzy.common.model.enums.QuestionSubmitLanguageEnum;
 import com.wzy.common.model.enums.QuestionSubmitStatusEnum;
 import com.wzy.common.model.vo.QuestionSubmitVO;
+import com.wzy.common.model.vo.UserVO;
 import com.wzy.common.utils.SqlUtils;
 import com.wzy.question.mapper.QuestionSubmitMapper;
 import com.wzy.question.rabbitmq.MessageProducer;
 import com.wzy.question.service.QuestionService;
 import com.wzy.question.service.QuestionSubmitService;
+import jodd.bean.BeanUtil;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -133,20 +142,55 @@ public class QuestionSubmitServiceImpl extends ServiceImpl<QuestionSubmitMapper,
         return questionSubmitVO;
     }
 
+    /**
+     * 分页获取题目封装
+     *
+     * @param questionSubmitPage
+     * @param loginUser
+     * @return
+     */
     @Override
     public Page<QuestionSubmitVO> getQuestionSubmitVOPage(Page<QuestionSubmit> questionSubmitPage, User loginUser) {
         List<QuestionSubmit> questionSubmitList = questionSubmitPage.getRecords();
         Page<QuestionSubmitVO> questionSubmitVOPage = new Page<>(questionSubmitPage.getCurrent(), questionSubmitPage.getSize(), questionSubmitPage.getTotal());
-        if (CollectionUtils.isEmpty(questionSubmitList)) {
-            return questionSubmitVOPage;
-        }
+//        if (CollectionUtils.isEmpty(questionSubmitList)) {
+//            return questionSubmitVOPage;
+//        }
+        UserVO userVO = new UserVO();
+        BeanUtils.copyProperties(loginUser, userVO);
         List<QuestionSubmitVO> questionSubmitVOList = questionSubmitList.stream()
-                .map(questionSubmit -> getQuestionSubmitVO(questionSubmit, loginUser))
-                .collect(Collectors.toList());
+                .map(m -> {
+                    QuestionSubmitVO questionSubmitVO = getQuestionSubmitVO(m, loginUser);
+                    questionSubmitVO.setUserVO(userVO);
+                    String judgeInfo = m.getJudgeInfo();
+                    JudgeInfo bean = JSONUtil.toBean(judgeInfo, JudgeInfo.class);
+                    String message = bean.getMessage();
+                    if (message != null) {
+                        questionSubmitVO.setJudgeInfo(Objects.requireNonNull(JudgeInfoMessageEnum.getEnumByValue(message)).getText());
+                    } else {
+                        questionSubmitVO.setJudgeInfo("暂无判题信息");
+                    }
+                    return questionSubmitVO;
+                }).collect(Collectors.toList());
         questionSubmitVOPage.setRecords(questionSubmitVOList);
         return questionSubmitVOPage;
     }
 
+
+    /**
+     * 获取个人数据总览
+     *
+     * @param loginUser
+     * @return
+     */
+    @Override
+    public BaseResponse<String> getPersonalData(User loginUser) {
+        Long id = loginUser.getId();
+        //1、获取用户提交了多少次
+        long userId = this.count(new QueryWrapper<QuestionSubmit>().eq("userId", id));
+        //2、
+        return ResultUtils.success(String.valueOf(userId));
+    }
 
 }
 

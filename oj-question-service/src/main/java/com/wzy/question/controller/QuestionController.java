@@ -51,6 +51,17 @@ public class QuestionController {
     // region 增删改查
 
     /**
+     * 获取前端个人数据总览
+     * @param request
+     * @return
+     */
+    @GetMapping("/getPersonalData")
+    public BaseResponse<String> getPersonalData(HttpServletRequest request){
+        User loginUser = userService.getLoginUser(request);
+        return questionSubmitService.getPersonalData(loginUser);
+    }
+
+    /**
      * 创建
      *
      * @param questionAddRequest

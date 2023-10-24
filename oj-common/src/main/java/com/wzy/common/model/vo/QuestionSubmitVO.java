@@ -34,7 +34,7 @@ public class QuestionSubmitVO implements Serializable {
     /**
      * 判题信息
      */
-    private JudgeInfo judgeInfo;
+    private String judgeInfo;
 
     /**
      * 判题状态（0 - 待判题、1 - 判题中、2 - 成功、3 - 失败）
@@ -45,7 +45,10 @@ public class QuestionSubmitVO implements Serializable {
      * 题目 id
      */
     private Long questionId;
-
+    /**
+     * 标题
+     */
+    private String title;
     /**
      * 创建用户 id
      */
@@ -83,7 +86,7 @@ public class QuestionSubmitVO implements Serializable {
         }
         QuestionSubmit questionSubmit = new QuestionSubmit();
         BeanUtils.copyProperties(questionSubmitVO, questionSubmit);
-        JudgeInfo judgeInfoObj = questionSubmitVO.getJudgeInfo();
+        String judgeInfoObj = questionSubmitVO.getJudgeInfo();
         if (judgeInfoObj != null) {
             questionSubmit.setJudgeInfo(JSONUtil.toJsonStr(judgeInfoObj));
         }
@@ -103,7 +106,7 @@ public class QuestionSubmitVO implements Serializable {
         QuestionSubmitVO questionSubmitVO = new QuestionSubmitVO();
         BeanUtils.copyProperties(questionSubmit, questionSubmitVO);
         String judgeInfoStr = questionSubmit.getJudgeInfo();
-        questionSubmitVO.setJudgeInfo(JSONUtil.toBean(judgeInfoStr, JudgeInfo.class));
+        questionSubmitVO.setJudgeInfo(String.valueOf(JSONUtil.toBean(judgeInfoStr, JudgeInfo.class)));
         return questionSubmitVO;
     }
 
