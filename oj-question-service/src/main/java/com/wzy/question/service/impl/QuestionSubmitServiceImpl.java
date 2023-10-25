@@ -14,19 +14,19 @@ import com.wzy.common.exception.BusinessException;
 import com.wzy.common.feign.UserFeignClient;
 import com.wzy.common.model.dto.questionsubmit.QuestionSubmitAddRequest;
 import com.wzy.common.model.dto.questionsubmit.QuestionSubmitQueryRequest;
-import com.wzy.common.model.entity.JudgeInfo;
-import com.wzy.common.model.entity.Question;
-import com.wzy.common.model.entity.QuestionSubmit;
-import com.wzy.common.model.entity.User;
+import com.wzy.common.model.entity.*;
 import com.wzy.common.model.enums.JudgeInfoMessageEnum;
 import com.wzy.common.model.enums.QuestionSubmitLanguageEnum;
 import com.wzy.common.model.enums.QuestionSubmitStatusEnum;
+import com.wzy.common.model.vo.PerSonalDataVo;
 import com.wzy.common.model.vo.QuestionSubmitVO;
+import com.wzy.common.model.vo.QuestionVO;
 import com.wzy.common.model.vo.UserVO;
 import com.wzy.common.utils.SqlUtils;
 import com.wzy.question.mapper.QuestionSubmitMapper;
 import com.wzy.question.rabbitmq.MessageProducer;
 import com.wzy.question.service.QuestionService;
+import com.wzy.question.service.QuestionSolveService;
 import com.wzy.question.service.QuestionSubmitService;
 import jodd.bean.BeanUtil;
 import org.apache.commons.collections4.CollectionUtils;
@@ -36,6 +36,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -52,6 +53,9 @@ public class QuestionSubmitServiceImpl extends ServiceImpl<QuestionSubmitMapper,
 
     @Resource
     private MessageProducer messageProducer;
+
+    @Resource
+    private QuestionSolveService questionSolveService;
 
     /**
      * 提交题目
@@ -170,6 +174,12 @@ public class QuestionSubmitServiceImpl extends ServiceImpl<QuestionSubmitMapper,
                     } else {
                         questionSubmitVO.setJudgeInfo("暂无判题信息");
                     }
+                    //获取判题信息，设置到对象中去
+                    Long questionId = m.getQuestionId();
+                    Question question = questionService.getById(questionId);
+                    QuestionVO questionSubmitVO1 = new QuestionVO();
+                    BeanUtils.copyProperties(question,questionSubmitVO1);
+                    questionSubmitVO.setQuestionVO(questionSubmitVO1);
                     return questionSubmitVO;
                 }).collect(Collectors.toList());
         questionSubmitVOPage.setRecords(questionSubmitVOList);
@@ -184,12 +194,21 @@ public class QuestionSubmitServiceImpl extends ServiceImpl<QuestionSubmitMapper,
      * @return
      */
     @Override
-    public BaseResponse<String> getPersonalData(User loginUser) {
+    public BaseResponse<PerSonalDataVo> getPersonalData(User loginUser) {
         Long id = loginUser.getId();
         //1、获取用户提交了多少次
-        long userId = this.count(new QueryWrapper<QuestionSubmit>().eq("userId", id));
-        //2、
-        return ResultUtils.success(String.valueOf(userId));
+        long commitCount = this.count(new QueryWrapper<QuestionSubmit>().eq("userId", id));
+        //2、获取该用户已经提交通过的题目数
+        long questionSolveCount = questionSolveService.count(new QueryWrapper<QuestionSolve>().eq("userId", id));
+        //3、获取总题量
+        long questionCount = questionService.count();
+        HashMap<String, Long> hashMap= new HashMap<>();
+        hashMap.put("commitCount",commitCount);
+        hashMap.put("questionSolveCount",questionSolveCount);
+        hashMap.put("questionCount",questionCount);
+        String jsonStr = JSONUtil.toJsonStr(hashMap);
+        PerSonalDataVo bean = JSONUtil.toBean(jsonStr, PerSonalDataVo.class);
+        return ResultUtils.success(bean);
     }
 
 }

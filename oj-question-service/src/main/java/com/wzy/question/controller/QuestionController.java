@@ -17,6 +17,7 @@ import com.wzy.common.model.dto.questionsubmit.QuestionSubmitQueryRequest;
 import com.wzy.common.model.entity.Question;
 import com.wzy.common.model.entity.QuestionSubmit;
 import com.wzy.common.model.entity.User;
+import com.wzy.common.model.vo.PerSonalDataVo;
 import com.wzy.common.model.vo.QuestionSubmitVO;
 import com.wzy.common.model.vo.QuestionVO;
 import com.wzy.question.service.QuestionService;
@@ -56,7 +57,7 @@ public class QuestionController {
      * @return
      */
     @GetMapping("/getPersonalData")
-    public BaseResponse<String> getPersonalData(HttpServletRequest request){
+    public BaseResponse<PerSonalDataVo> getPersonalData(HttpServletRequest request){
         User loginUser = userService.getLoginUser(request);
         return questionSubmitService.getPersonalData(loginUser);
     }

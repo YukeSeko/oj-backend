@@ -9,6 +9,7 @@ import com.wzy.common.model.dto.questionsubmit.QuestionSubmitAddRequest;
 import com.wzy.common.model.dto.questionsubmit.QuestionSubmitQueryRequest;
 import com.wzy.common.model.entity.QuestionSubmit;
 import com.wzy.common.model.entity.User;
+import com.wzy.common.model.vo.PerSonalDataVo;
 import com.wzy.common.model.vo.QuestionSubmitVO;
 
 public interface QuestionSubmitService extends IService<QuestionSubmit> {
@@ -53,5 +54,5 @@ public interface QuestionSubmitService extends IService<QuestionSubmit> {
      * @param loginUser
      * @return
      */
-    BaseResponse<String> getPersonalData(User loginUser);
+    BaseResponse<PerSonalDataVo> getPersonalData(User loginUser);
 }
