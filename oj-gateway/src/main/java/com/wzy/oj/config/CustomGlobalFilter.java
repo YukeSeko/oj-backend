@@ -4,12 +4,17 @@ import cn.hutool.core.text.AntPathMatcher;
 import cn.hutool.http.HttpRequest;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
+import com.alibaba.nacos.common.model.RestResult;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wzy.common.common.BaseResponse;
 import com.wzy.common.feign.UserFeignClient;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
+import org.springframework.core.io.buffer.DataBuffer;
+import org.springframework.core.io.buffer.DataBufferFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.server.reactive.ServerHttpRequest;
@@ -73,7 +78,16 @@ public class CustomGlobalFilter implements GlobalFilter, Ordered {
             Object data = baseResponse.getData();
             if (null == data) {
                 response.setStatusCode(HttpStatus.FORBIDDEN);
-                return response.setComplete();
+                DataBufferFactory bufferFactory = response.bufferFactory();
+                ObjectMapper objectMapper = new ObjectMapper();
+                DataBuffer wrap = null;
+                try {
+                    wrap = bufferFactory.wrap(objectMapper.writeValueAsBytes(new RestResult<>(403, "Not Logged In","Need Login")));
+                } catch (JsonProcessingException e) {
+                    throw new RuntimeException(e);
+                }
+                DataBuffer finalWrap = wrap;
+                return response.writeWith(Mono.fromSupplier(() -> finalWrap));
             } else {
                 return chain.filter(exchange);
             }
