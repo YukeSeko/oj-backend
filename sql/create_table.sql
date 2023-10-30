@@ -65,7 +65,6 @@ create table if not exists question_submit
 ) comment '题目提交';
 
 
-
 -- 帖子表
 create table if not exists post
 (
@@ -105,3 +104,21 @@ create table if not exists post_favour
     index idx_postId (postId),
     index idx_userId (userId)
 ) comment '帖子收藏';
+
+-- 用户已经解决题目数
+DROP TABLE IF EXISTS `question_solve`;
+CREATE TABLE `question_solve`
+(
+    `id`         bigint                                                         NOT NULL COMMENT 'id',
+    `userId`     bigint                                                         NOT NULL COMMENT '用户id',
+    `questionId` bigint                                                         NOT NULL COMMENT '题目id',
+    `title`      varchar(512) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci  NOT NULL COMMENT '题目标题',
+    `tags`       varchar(1024) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '题目标签',
+    `createTime` datetime                                                       NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建日期',
+    `updateTime` datetime                                                       NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新日期',
+    `isDelete`   tinyint                                                        NOT NULL COMMENT '是否删除',
+    PRIMARY KEY (`id`) USING BTREE
+) ENGINE = InnoDB
+  CHARACTER SET = utf8mb4
+  COLLATE = utf8mb4_0900_ai_ci
+  ROW_FORMAT = Dynamic;

@@ -29,8 +29,9 @@ public class JudgeListener {
     @SneakyThrows
     @RabbitListener(queues = {RabbitMqConstant.queue_name}, ackMode = "MANUAL")
     public void receiveMessage(String message, Channel channel, @Header(AmqpHeaders.DELIVERY_TAG) long deliveryTag) {
-        log.info("receiveMessage message = {}", message);
-        long questionSubmitId = Long.parseLong(message);
+        String replace = message.replace("\"", "");
+        log.info("receiveMessage message = {}", replace);
+        long questionSubmitId = Long.parseLong(replace);
         try {
             judgeService.doJudge(questionSubmitId);
             channel.basicAck(deliveryTag, false);

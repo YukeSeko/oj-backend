@@ -31,15 +31,15 @@ public class MessageProducer {
      */
     public void sendMessage(String exchange, String routingKey, String message) {
         rabbitTemplate.convertAndSend(exchange, routingKey, message);
-        rabbitTemplate.setConfirmCallback((correlationData, b, s) -> {
-            if (b) {
-                log.info("消息成功发送");
-                //修改redis中消息状态
-                redisTemplate.opsForValue().set(RabbitMqConstant.redis_key +message,RabbitMqConstant.redis_deliver_success);
-            } else {
-                log.info("消息发送失败：" + correlationData + ", 出现异常：" + s);
-                redisTemplate.opsForValue().set(RabbitMqConstant.redis_key +message,RabbitMqConstant.redis_deliver_fail);
-            }
-        });
+//        rabbitTemplate.setConfirmCallback((correlationData, b, s) -> {
+//            if (b) {
+//                log.info("消息成功发送");
+//                //修改redis中消息状态
+//                redisTemplate.opsForValue().set(RabbitMqConstant.redis_key +message,RabbitMqConstant.redis_deliver_success);
+//            } else {
+//                log.info("消息发送失败：" + correlationData + ", 出现异常：" + s);
+//                redisTemplate.opsForValue().set(RabbitMqConstant.redis_key +message,RabbitMqConstant.redis_deliver_fail);
+//            }
+//        });
     }
 }
