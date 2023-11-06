@@ -97,7 +97,7 @@ public class QuestionSubmitServiceImpl extends ServiceImpl<QuestionSubmitMapper,
         // 执行判题服务：向mq中发送消息
         messageProducer.sendMessage(RabbitMqConstant.exchange, RabbitMqConstant.routing_key, String.valueOf(questionSubmitId));
 //        CompletableFuture.runAsync(() -> {
-//            //todo 向mq中发送消息
+//            // 向mq中发送消息
 //            judgeService.doJudge(questionSubmitId);
 //        });
         return questionSubmitId;
