@@ -2,6 +2,7 @@ package com.wzy.common.feign;
 
 
 import com.wzy.common.model.entity.Question;
+import com.wzy.common.model.entity.QuestionSolve;
 import com.wzy.common.model.entity.QuestionSubmit;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -21,4 +22,19 @@ public interface QuestionFeignClient {
     @PostMapping("/question_submit/update")
     boolean updateQuestionSubmitById(@RequestBody QuestionSubmit questionSubmit);
 
+    /**
+     * 更新题目通过率
+     * @param questionId
+     * @return
+     */
+    @PostMapping("/question_submit/updateAccepted")
+    boolean updateQuestionById(@RequestParam("questionId") long questionId);
+
+    /**
+     * 更新用户提交通过的题目
+     * @param questionSolve
+     * @return
+     */
+    @PostMapping("/question_submit/createQuestionSolve")
+    boolean createQuestionSolve(@RequestBody QuestionSolve questionSolve);
 }

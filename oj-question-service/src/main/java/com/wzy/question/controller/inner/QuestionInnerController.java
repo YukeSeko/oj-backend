@@ -2,8 +2,10 @@ package com.wzy.question.controller.inner;
 
 import com.wzy.common.feign.QuestionFeignClient;
 import com.wzy.common.model.entity.Question;
+import com.wzy.common.model.entity.QuestionSolve;
 import com.wzy.common.model.entity.QuestionSubmit;
 import com.wzy.question.service.QuestionService;
+import com.wzy.question.service.QuestionSolveService;
 import com.wzy.question.service.QuestionSubmitService;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,6 +20,9 @@ import javax.annotation.Resource;
 public class QuestionInnerController implements QuestionFeignClient {
     @Resource
     private QuestionService questionService;
+
+    @Resource
+    private QuestionSolveService questionSolveService;
 
     @Resource
     private QuestionSubmitService questionSubmitService;
@@ -40,5 +45,17 @@ public class QuestionInnerController implements QuestionFeignClient {
         return questionSubmitService.updateById(questionSubmit);
     }
 
+    @PostMapping("/question_submit/updateAccepted")
+    @Override
+    public boolean updateQuestionById(long questionId) {
+        Question byId = questionService.getById(questionId);
+        byId.setAcceptedNum(byId.getAcceptedNum() + 1);
+        return questionService.updateById(byId);
+    }
+
+    @Override
+    public boolean createQuestionSolve(QuestionSolve questionSolve) {
+        return false;
+    }
 
 }

@@ -90,7 +90,9 @@ public class QuestionSubmitServiceImpl extends ServiceImpl<QuestionSubmitMapper,
         questionSubmit.setStatus(QuestionSubmitStatusEnum.WAITING.getValue());
         questionSubmit.setJudgeInfo("{}");
         boolean save = this.save(questionSubmit);
-        if (!save) {
+        question.setSubmitNum(question.getSubmitNum() + 1);
+        boolean b = questionService.updateById(question);
+        if (!save || !b) {
             throw new BusinessException(ErrorCode.SYSTEM_ERROR, "数据插入失败");
         }
         Long questionSubmitId = questionSubmit.getId();
@@ -178,7 +180,7 @@ public class QuestionSubmitServiceImpl extends ServiceImpl<QuestionSubmitMapper,
                     Long questionId = m.getQuestionId();
                     Question question = questionService.getById(questionId);
                     QuestionVO questionSubmitVO1 = new QuestionVO();
-                    BeanUtils.copyProperties(question,questionSubmitVO1);
+                    BeanUtils.copyProperties(question, questionSubmitVO1);
                     questionSubmitVO.setQuestionVO(questionSubmitVO1);
                     return questionSubmitVO;
                 }).collect(Collectors.toList());
@@ -202,10 +204,10 @@ public class QuestionSubmitServiceImpl extends ServiceImpl<QuestionSubmitMapper,
         long questionSolveCount = questionSolveService.count(new QueryWrapper<QuestionSolve>().eq("userId", id));
         //3、获取总题量
         long questionCount = questionService.count();
-        HashMap<String, Long> hashMap= new HashMap<>();
-        hashMap.put("commitCount",commitCount);
-        hashMap.put("questionSolveCount",questionSolveCount);
-        hashMap.put("questionCount",questionCount);
+        HashMap<String, Long> hashMap = new HashMap<>();
+        hashMap.put("commitCount", commitCount);
+        hashMap.put("questionSolveCount", questionSolveCount);
+        hashMap.put("questionCount", questionCount);
         String jsonStr = JSONUtil.toJsonStr(hashMap);
         PerSonalDataVo bean = JSONUtil.toBean(jsonStr, PerSonalDataVo.class);
         return ResultUtils.success(bean);

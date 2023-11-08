@@ -8,6 +8,7 @@ import com.wzy.common.feign.QuestionFeignClient;
 import com.wzy.common.model.dto.question.JudgeCase;
 import com.wzy.common.model.entity.JudgeInfo;
 import com.wzy.common.model.entity.Question;
+import com.wzy.common.model.entity.QuestionSolve;
 import com.wzy.common.model.entity.QuestionSubmit;
 import com.wzy.common.model.enums.JudgeInfoMessageEnum;
 import com.wzy.common.model.enums.QuestionSubmitStatusEnum;
@@ -28,12 +29,12 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-public class JudgeServiceImpl implements JudgeService{
-
+public class JudgeServiceImpl implements JudgeService {
 
 
     @Resource
     private QuestionFeignClient questionService;
+
 
 
     @Value("${codesandbox.type:example}")
@@ -42,11 +43,12 @@ public class JudgeServiceImpl implements JudgeService{
 
     /**
      * 判题服务
+     *
      * @param questionSubmitId
      * @return
      */
     @Override
-    @Transactional(rollbackFor = Exception.class)
+//    @Transactional(rollbackFor = Exception.class)
     public QuestionSubmit doJudge(long questionSubmitId) {
         QuestionSubmit questionSubmit = questionService.getQuestionSubmitById(questionSubmitId);
         if (questionSubmit == null) {
@@ -80,7 +82,21 @@ public class JudgeServiceImpl implements JudgeService{
         List<JudgeCase> judgeCaseList = JSONUtil.toList(judgeCaseStr, JudgeCase.class);
         List<String> inputList = judgeCaseList.stream().map(JudgeCase::getInput).collect(Collectors.toList());
         ExecuteCodeRequest executeCodeRequest = ExecuteCodeRequest.builder().code(code).language(language).inputList(inputList).build();
-        ExecuteCodeResponse executeCodeResponse = codeSandBox.executeCode(executeCodeRequest);
+        ExecuteCodeResponse executeCodeResponse = null;
+        //修改判题结果
+        questionSubmitUpdate = new QuestionSubmit();
+        questionSubmitUpdate.setId(questionSubmitId);
+        try {
+            executeCodeResponse = codeSandBox.executeCode(executeCodeRequest);
+        } catch (Exception e) {
+            JudgeInfo judgeInfo = new JudgeInfo();
+            //远程代码执行异常
+            judgeInfo.setMessage(JudgeInfoMessageEnum.RUNTIME_ERROR.getValue());
+            questionSubmitUpdate.setStatus(QuestionSubmitStatusEnum.FAILED.getValue());
+            questionSubmitUpdate.setJudgeInfo(JSONUtil.toJsonStr(judgeInfo));
+            questionService.updateQuestionSubmitById(questionSubmitUpdate);
+            throw new BusinessException(ErrorCode.API_REQUEST_TIMEOUT_ERROR);
+        }
         //拿到题目的结果输出
         List<String> outputList = executeCodeResponse.getOutputList();
         // 5）根据沙箱的执行结果，设置题目的判题状态和信息
@@ -94,13 +110,19 @@ public class JudgeServiceImpl implements JudgeService{
         //执行判题
         JudgeStrategy judgeStrategy = new DefaultJudgeStrategy();
         JudgeInfo judgeInfo = judgeStrategy.doJudge(judgeContext);
-        //修改判题结果
-        questionSubmitUpdate = new QuestionSubmit();
-        questionSubmitUpdate.setId(questionSubmitId);
-        if(judgeInfo.getMessage().equals(JudgeInfoMessageEnum.ACCEPTED.getValue())){
+        if (judgeInfo.getMessage().equals(JudgeInfoMessageEnum.ACCEPTED.getValue())) {
             //判题成功
             questionSubmitUpdate.setStatus(QuestionSubmitStatusEnum.SUCCEED.getValue());
-        }else {
+            // 更新完状态后，需要修改question中的题目通过率
+            questionService.updateQuestionById(questionId);
+            // 更新当前用户的题目解决情况
+            QuestionSolve questionSolve = new QuestionSolve();
+            questionSolve.setQuestionId(questionId);
+            questionSolve.setUserId(questionSubmit.getUserId());
+            questionSolve.setTags(question.getTags());
+            questionSolve.setTitle(question.getTitle());
+            questionService.createQuestionSolve(questionSolve);
+        } else {
             //其他清空均为判题失败
             questionSubmitUpdate.setStatus(QuestionSubmitStatusEnum.FAILED.getValue());
         }
@@ -109,7 +131,6 @@ public class JudgeServiceImpl implements JudgeService{
         if (!update) {
             throw new BusinessException(ErrorCode.SYSTEM_ERROR, "题目状态更新错误");
         }
-        //todo 更新完状态后，需要修改question中的题目通过率
         return questionService.getQuestionSubmitById(questionId);
     }
 }

@@ -32,15 +32,21 @@ public class RemoteCodeSandbox implements CodeSandBox {
         System.out.println("远程代码沙箱");
         String url = "http://10.1.201.207:8090/executeCode";
         String json = JSONUtil.toJsonStr(executeCodeRequest);
-        String responseStr = HttpUtil.createPost(url)
-                .header(AUTH_REQUEST_HEADER, AUTH_REQUEST_SECRET)
-                .body(json)
-                .execute()
-                .body();
+        String responseStr = null;
+        try {
+            responseStr = HttpUtil.createPost(url)
+                    .header(AUTH_REQUEST_HEADER, AUTH_REQUEST_SECRET)
+                    .body(json)
+                    .timeout(20000)
+                    .execute()
+                    .body();
+        }catch (Exception e){
+            // 远程执行代码超时
+            throw new RuntimeException();
+        }
         if (StringUtils.isBlank(responseStr)) {
             throw new BusinessException(ErrorCode.API_REQUEST_ERROR, "executeCode remoteSandbox error, message = " + responseStr);
         }
-        // todo 解析异常情况
         return JSONUtil.toBean(responseStr, ExecuteCodeResponse.class);
     }
 }
