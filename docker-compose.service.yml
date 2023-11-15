@@ -1,0 +1,54 @@
+version: '3'
+services:
+  oj-gateway:
+    container_name: oj-gateway
+    build:
+      context: ./oj-gateway
+      dockerfile: Dockerfile
+    ports:
+      - "88:88"
+    networks:
+      - mynetwork
+
+  oj-user-service:
+    container_name: oj-user-service
+    build:
+      context: ./oj-user-service
+      dockerfile: Dockerfile
+    ports:
+      - "8030:8030"
+    networks:
+      - mynetwork
+    depends_on:
+      - oj-gateway
+
+  oj-question-service:
+    container_name: oj-question-service
+    build:
+      context: ./oj-question-service
+      dockerfile: Dockerfile
+    ports:
+      - "8020:8020"
+    networks:
+      - mynetwork
+    depends_on:
+      - oj-user-service
+      - oj-gateway
+
+  oj-judge-service:
+    container_name: oj-judge-service
+    build:
+      context: ./oj-judge-service
+      dockerfile: Dockerfile
+    ports:
+      - "8010:8010"
+    networks:
+      - mynetwork
+    depends_on:
+      - oj-user-service
+      - oj-question-service
+      - oj-gateway
+
+# 网络，不定义的话就是默认网络
+networks:
+  mynetwork:
