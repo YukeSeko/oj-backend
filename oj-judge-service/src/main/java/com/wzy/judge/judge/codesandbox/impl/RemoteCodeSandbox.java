@@ -9,6 +9,7 @@ import com.wzy.judge.judge.codesandbox.CodeSandBox;
 import com.wzy.judge.judge.codesandbox.model.ExecuteCodeRequest;
 import com.wzy.judge.judge.codesandbox.model.ExecuteCodeResponse;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Value;
 
 /**
  * 远程代码沙箱（实际调用接口的沙箱）
@@ -22,6 +23,7 @@ public class RemoteCodeSandbox implements CodeSandBox {
     private static final String AUTH_REQUEST_HEADER = "auth";
     private static final String AUTH_REQUEST_SECRET = "secretKey";
 
+    private static final String url = "http://117.72.15.110:8090/executeCode";
     /**
      * 远程调用docker执行代码
      * @param executeCodeRequest
@@ -30,14 +32,13 @@ public class RemoteCodeSandbox implements CodeSandBox {
     @Override
     public ExecuteCodeResponse executeCode(ExecuteCodeRequest executeCodeRequest) {
         System.out.println("远程代码沙箱");
-        String url = "http://10.1.201.207:8090/executeCode";
         String json = JSONUtil.toJsonStr(executeCodeRequest);
         String responseStr = null;
         try {
             responseStr = HttpUtil.createPost(url)
                     .header(AUTH_REQUEST_HEADER, AUTH_REQUEST_SECRET)
                     .body(json)
-                    .timeout(20000)
+//                    .timeout(20000)
                     .execute()
                     .body();
         }catch (Exception e){
