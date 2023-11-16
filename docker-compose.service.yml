@@ -3,8 +3,7 @@ services:
   oj-gateway:
     container_name: oj-gateway
     build:
-      context: ./oj-gateway
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile-gateway
     ports:
       - "88:88"
     networks:
@@ -13,8 +12,7 @@ services:
   oj-user-service:
     container_name: oj-user-service
     build:
-      context: ./oj-user-service
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile-user
     ports:
       - "8030:8030"
     networks:
@@ -25,8 +23,7 @@ services:
   oj-question-service:
     container_name: oj-question-service
     build:
-      context: ./oj-question-service
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile-question
     ports:
       - "8020:8020"
     networks:
@@ -38,8 +35,7 @@ services:
   oj-judge-service:
     container_name: oj-judge-service
     build:
-      context: ./oj-judge-service
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile-judge
     ports:
       - "8010:8010"
     networks:

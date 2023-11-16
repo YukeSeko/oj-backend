@@ -5,10 +5,10 @@ FROM openjdk:8-jdk-alpine
 WORKDIR /app
 
 # 将jar包添加到工作目录
-ADD target/oj-question-service-0.0.1-SNAPSHOT.jar .
+ADD oj-user-service-0.0.1-SNAPSHOT.jar .
 
 # 暴露端口
-EXPOSE 8020
+EXPOSE 8030
 
 # 启动命令
-CMD ["java","-jar","/app/oj-question-service-0.0.1-SNAPSHOT.jar","--spring.profiles.active=prod"]
+CMD ["java","-jar","/app/oj-user-service-0.0.1-SNAPSHOT.jar","--spring.profiles.active=prod"]

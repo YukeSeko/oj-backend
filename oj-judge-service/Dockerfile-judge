@@ -5,10 +5,10 @@ FROM openjdk:8-jdk-alpine
 WORKDIR /app
 
 # 将jar包添加到工作目录
-ADD target/oj-gateway-0.0.1-SNAPSHOT.jar .
+ADD oj-judge-service-0.0.1-SNAPSHOT.jar .
 
 # 暴露端口
-EXPOSE 88
+EXPOSE 8010
 
 # 启动命令
-CMD ["java","-jar","/app/oj-gateway-0.0.1-SNAPSHOT.jar","--spring.profiles.active=prod"]
+CMD ["java","-jar","/app/oj-judge-service-0.0.1-SNAPSHOT.jar","--spring.profiles.active=prod"]
