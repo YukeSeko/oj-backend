@@ -1,4 +1,4 @@
-package com.wzy.common.config;
+package com.wzy.user.config;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;

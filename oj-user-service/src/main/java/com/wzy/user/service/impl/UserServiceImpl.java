@@ -14,13 +14,14 @@ import com.wzy.common.model.entity.User;
 import com.wzy.common.model.enums.UserRoleEnum;
 import com.wzy.common.model.vo.LoginUserVO;
 import com.wzy.common.model.vo.UserVO;
-import com.wzy.common.utils.MailUtils;
+import com.wzy.user.common.MailUtils;
 import com.wzy.common.utils.SqlUtils;
 import com.wzy.user.mapper.UserMapper;
 import com.wzy.user.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -47,7 +48,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
      */
     private static final String SALT = "YukeSeko";
 
-    private static MailUtils mailUtils = new MailUtils();
+    @Autowired
+    private MailUtils mailUtils;
 
     @Resource
     private RedisTemplate<String, String> redisTemplate;
@@ -80,6 +82,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             // 账户、邮箱不能重复
             QueryWrapper<User> queryWrapper = new QueryWrapper<>();
             queryWrapper.eq("userAccount", userAccount);
+            queryWrapper.or();
             queryWrapper.eq("email", email);
             long count = this.baseMapper.selectCount(queryWrapper);
             if (count > 0) {
@@ -92,10 +95,13 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             user.setUserAccount(userAccount);
             user.setUserPassword(encryptPassword);
             user.setEmail(email);
+            user.setUserName(userAccount);
             boolean saveResult = this.save(user);
             if (!saveResult) {
                 throw new BusinessException(ErrorCode.SYSTEM_ERROR, "注册失败，数据库错误");
             }
+            //删除redis中的数据
+            mailUtils.deleteRedisEmail(email);
             return user.getId();
         }
     }
