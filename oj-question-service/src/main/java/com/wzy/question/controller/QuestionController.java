@@ -22,6 +22,7 @@ import com.wzy.common.model.vo.QuestionSubmitVO;
 import com.wzy.common.model.vo.QuestionVO;
 import com.wzy.question.service.QuestionService;
 import com.wzy.question.service.QuestionSubmitService;
+import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.web.bind.annotation.*;
@@ -51,24 +52,24 @@ public class QuestionController {
 
     // region 增删改查
 
-    /**
-     * 获取前端个人数据总览
-     * @param request
-     * @return
-     */
+
+    @ApiOperation("获取题目答案")
+    @GetMapping("/getQuestionAnswer")
+    public BaseResponse<String> getQuestionAnswer(Long questionId){
+        String answer = questionService.getQuestionAnswerById(questionId);
+        return ResultUtils.success(answer);
+    }
+
+
+    @ApiOperation("获取前端个人数据总览")
     @GetMapping("/getPersonalData")
     public BaseResponse<PerSonalDataVo> getPersonalData(HttpServletRequest request){
         User loginUser = userService.getLoginUser(request);
         return questionSubmitService.getPersonalData(loginUser);
     }
 
-    /**
-     * 创建
-     *
-     * @param questionAddRequest
-     * @param request
-     * @return
-     */
+
+    @ApiOperation("创建题目")
     @PostMapping("/add")
     public BaseResponse<Long> addQuestion(@RequestBody QuestionAddRequest questionAddRequest, HttpServletRequest request) {
         if (questionAddRequest == null) {
@@ -99,13 +100,7 @@ public class QuestionController {
         return ResultUtils.success(newQuestionId);
     }
 
-    /**
-     * 删除
-     *
-     * @param deleteRequest
-     * @param request
-     * @return
-     */
+    @ApiOperation("删除题目")
     @PostMapping("/delete")
     public BaseResponse<Boolean> deleteQuestion(@RequestBody DeleteRequest deleteRequest, HttpServletRequest request) {
         if (deleteRequest == null || deleteRequest.getId() <= 0) {
@@ -124,12 +119,7 @@ public class QuestionController {
         return ResultUtils.success(b);
     }
 
-    /**
-     * 更新（仅管理员）
-     *
-     * @param questionUpdateRequest
-     * @return
-     */
+    @ApiOperation("更新（仅管理员）")
     @PostMapping("/update")
     @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
     public BaseResponse<Boolean> updateQuestion(@RequestBody QuestionUpdateRequest questionUpdateRequest) {
@@ -160,12 +150,7 @@ public class QuestionController {
         return ResultUtils.success(result);
     }
 
-    /**
-     * 根据 id 获取
-     *
-     * @param id
-     * @return
-     */
+    @ApiOperation("根据 id 获取")
     @GetMapping("/get")
     public BaseResponse<Question> getQuestionById(long id, HttpServletRequest request) {
         if (id <= 0) {
@@ -183,12 +168,7 @@ public class QuestionController {
         return ResultUtils.success(question);
     }
 
-    /**
-     * 根据 id 获取（脱敏）
-     *
-     * @param id
-     * @return
-     */
+    @ApiOperation("根据 id 获取（脱敏）")
     @GetMapping("/get/vo")
     public BaseResponse<QuestionVO> getQuestionVOById(long id, HttpServletRequest request) {
         if (id <= 0) {
@@ -201,13 +181,7 @@ public class QuestionController {
         return ResultUtils.success(questionService.getQuestionVO(question, request));
     }
 
-    /**
-     * 分页获取列表（封装类）
-     *
-     * @param questionQueryRequest
-     * @param request
-     * @return
-     */
+    @ApiOperation("分页获取列表（封装类）")
     @PostMapping("/list/page/vo")
     public BaseResponse<Page<QuestionVO>> listQuestionVOByPage(@RequestBody QuestionQueryRequest questionQueryRequest,
             HttpServletRequest request) {
@@ -220,13 +194,7 @@ public class QuestionController {
         return ResultUtils.success(questionService.getQuestionVOPage(questionPage, request));
     }
 
-    /**
-     * 分页获取当前用户创建的资源列表
-     *
-     * @param questionQueryRequest
-     * @param request
-     * @return
-     */
+    @ApiOperation("分页获取当前用户创建的资源列表")
     @PostMapping("/my/list/page/vo")
     public BaseResponse<Page<QuestionVO>> listMyQuestionVOByPage(@RequestBody QuestionQueryRequest questionQueryRequest,
             HttpServletRequest request) {
@@ -244,13 +212,8 @@ public class QuestionController {
         return ResultUtils.success(questionService.getQuestionVOPage(questionPage, request));
     }
 
-    /**
-     * 分页获取题目列表（仅管理员）
-     *
-     * @param questionQueryRequest
-     * @param request
-     * @return
-     */
+
+    @ApiOperation("分页获取题目列表（仅管理员）")
     @PostMapping("/list/page")
     @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
     public BaseResponse<Page<Question>> listQuestionByPage(@RequestBody QuestionQueryRequest questionQueryRequest,

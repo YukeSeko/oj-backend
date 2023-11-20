@@ -19,6 +19,7 @@ import com.wzy.question.service.QuestionService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -35,6 +36,9 @@ public class QuestionServiceImpl extends ServiceImpl<QuestionMapper, Question>
 
     @Resource
     private UserFeignClient userService;
+
+    @Autowired
+    private QuestionMapper questionMapper;
 
     /**
      * 校验题目是否合法
@@ -150,6 +154,16 @@ public class QuestionServiceImpl extends ServiceImpl<QuestionMapper, Question>
         }).collect(Collectors.toList());
         questionVOPage.setRecords(questionVOList);
         return questionVOPage;
+    }
+
+    /**
+     * 获取题目答案
+     * @param questionId
+     * @return
+     */
+    @Override
+    public String getQuestionAnswerById(Long questionId) {
+        return questionMapper.getQuestionAnswerById(questionId);
     }
 
 

@@ -29,4 +29,7 @@
         thumbNum,favourNum,userId,
         createTime,updateTime,isDelete
     </sql>
+    <select id="getQuestionAnswerById" resultType="java.lang.String">
+        select answer from question where id = #{questionId};
+    </select>
 </mapper>

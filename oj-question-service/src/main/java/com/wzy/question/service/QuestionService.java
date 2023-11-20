@@ -29,7 +29,7 @@ public interface QuestionService extends IService<Question> {
      * @return
      */
     QueryWrapper<Question> getQueryWrapper(QuestionQueryRequest questionQueryRequest);
-    
+
     /**
      * 获取题目封装
      *
@@ -48,4 +48,11 @@ public interface QuestionService extends IService<Question> {
      */
     Page<QuestionVO> getQuestionVOPage(Page<Question> questionPage, HttpServletRequest request);
 
+    /**
+     * 获取题目答案
+     *
+     * @param questionId
+     * @return
+     */
+    String getQuestionAnswerById(Long questionId);
 }

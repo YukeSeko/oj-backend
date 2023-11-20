@@ -2,6 +2,8 @@ package com.wzy.common.model.vo;
 
 import java.io.Serializable;
 import java.util.Date;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
 /**
@@ -14,6 +16,7 @@ public class LoginUserVO implements Serializable {
     /**
      * 用户 id
      */
+    @JsonFormat(shape =JsonFormat.Shape.STRING )
     private Long id;
 
     /**
