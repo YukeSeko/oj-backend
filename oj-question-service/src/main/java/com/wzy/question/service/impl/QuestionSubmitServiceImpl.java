@@ -173,8 +173,10 @@ public class QuestionSubmitServiceImpl extends ServiceImpl<QuestionSubmitMapper,
                     String message = bean.getMessage();
                     if (message != null) {
                         questionSubmitVO.setJudgeInfo(Objects.requireNonNull(JudgeInfoMessageEnum.getEnumByValue(message)).getText());
+                        questionSubmitVO.setDetailsInfo(bean);
                     } else {
                         questionSubmitVO.setJudgeInfo("暂无判题信息");
+                        questionSubmitVO.setDetailsInfo(null);
                     }
                     //获取判题信息，设置到对象中去
                     Long questionId = m.getQuestionId();
