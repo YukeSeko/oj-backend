@@ -116,7 +116,7 @@ CREATE TABLE `question_solve`
     `tags`       varchar(1024) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '题目标签',
     `createTime` datetime                                                       NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建日期',
     `updateTime` datetime                                                       NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新日期',
-    `isDelete`   tinyint                                                        NOT NULL COMMENT '是否删除',
+    `isDelete`   tinyint                                                        NOT NULL DEFAULT 0 COMMENT '是否删除',
     PRIMARY KEY (`id`) USING BTREE
 ) ENGINE = InnoDB
   CHARACTER SET = utf8mb4
