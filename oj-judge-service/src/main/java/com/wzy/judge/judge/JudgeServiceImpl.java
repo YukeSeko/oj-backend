@@ -131,7 +131,6 @@ public class JudgeServiceImpl implements JudgeService {
         if (!update) {
             throw new BusinessException(ErrorCode.SYSTEM_ERROR, "题目状态更新错误");
         }
-        //todo 修改当前用户的通过率
         return questionService.getQuestionSubmitById(questionId);
     }
 }

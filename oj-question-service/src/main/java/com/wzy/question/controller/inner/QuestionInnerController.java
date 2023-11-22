@@ -1,5 +1,6 @@
 package com.wzy.question.controller.inner;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.wzy.common.feign.QuestionFeignClient;
 import com.wzy.common.model.entity.Question;
 import com.wzy.common.model.entity.QuestionSolve;
@@ -53,9 +54,17 @@ public class QuestionInnerController implements QuestionFeignClient {
         return questionService.updateById(byId);
     }
 
+    @PostMapping("/question_submit/createQuestionSolve")
     @Override
-    public boolean createQuestionSolve(QuestionSolve questionSolve) {
-        return false;
+    public boolean createQuestionSolve(@RequestBody QuestionSolve questionSolve) {
+        Long questionId = questionSolve.getQuestionId();
+        Long userId = questionSolve.getUserId();
+        long count = questionSolveService.count(new QueryWrapper<QuestionSolve>().eq("questionId", questionId).eq("userId", userId));
+        if (count > 0){
+            return true;
+        }else {
+            return questionSolveService.save(questionSolve);
+        }
     }
 
 }

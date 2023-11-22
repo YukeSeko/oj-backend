@@ -23,7 +23,7 @@ public class RemoteCodeSandbox implements CodeSandBox {
     private static final String AUTH_REQUEST_HEADER = "auth";
     private static final String AUTH_REQUEST_SECRET = "secretKey";
 
-    private static final String url = "http://10.1.201.207:8090/executeCode";
+    private static final String url = "http://122.9.148.119:8090/executeCode";
     /**
      * 远程调用docker执行代码
      * @param executeCodeRequest

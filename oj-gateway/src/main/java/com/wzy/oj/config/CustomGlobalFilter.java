@@ -82,7 +82,7 @@ public class CustomGlobalFilter implements GlobalFilter, Ordered {
                 ObjectMapper objectMapper = new ObjectMapper();
                 DataBuffer wrap = null;
                 try {
-                    wrap = bufferFactory.wrap(objectMapper.writeValueAsBytes(new RestResult<>(403, "Not Logged In","Need Login")));
+                    wrap = bufferFactory.wrap(objectMapper.writeValueAsBytes(new RestResult<>(403, "登录信息过期","Need Login")));
                 } catch (JsonProcessingException e) {
                     throw new RuntimeException(e);
                 }
