@@ -8,6 +8,8 @@ services:
       - "88:88"
     networks:
       - mynetwork
+    environment:
+      - JAVA_OPTS=-Xmx256m
 
   oj-user-service:
     container_name: oj-user-service
@@ -19,6 +21,8 @@ services:
       - mynetwork
     depends_on:
       - oj-gateway
+    environment:
+      - JAVA_OPTS=-Xmx512m
 
   oj-question-service:
     container_name: oj-question-service
@@ -31,6 +35,8 @@ services:
     depends_on:
       - oj-user-service
       - oj-gateway
+    environment:
+      - JAVA_OPTS=-Xmx512m
 
   oj-judge-service:
     container_name: oj-judge-service
@@ -44,6 +50,8 @@ services:
       - oj-user-service
       - oj-question-service
       - oj-gateway
+    environment:
+      - JAVA_OPTS=-Xmx512m
 
 # 网络，不定义的话就是默认网络
 networks:
