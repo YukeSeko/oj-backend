@@ -10,6 +10,10 @@ services:
       - mynetwork
     environment:
       - JAVA_OPTS=-Xmx256m
+    deploy:
+      resources:
+        limits:
+          memory: 300M
 
   oj-user-service:
     container_name: oj-user-service
@@ -23,6 +27,10 @@ services:
       - oj-gateway
     environment:
       - JAVA_OPTS=-Xmx512m
+    deploy:
+      resources:
+        limits:
+          memory: 512M
 
   oj-question-service:
     container_name: oj-question-service
@@ -37,6 +45,10 @@ services:
       - oj-gateway
     environment:
       - JAVA_OPTS=-Xmx512m
+    deploy:
+      resources:
+        limits:
+          memory: 512M
 
   oj-judge-service:
     container_name: oj-judge-service
@@ -52,6 +64,10 @@ services:
       - oj-gateway
     environment:
       - JAVA_OPTS=-Xmx512m
+    deploy:
+      resources:
+        limits:
+          memory: 512M
 
 # 网络，不定义的话就是默认网络
 networks:
