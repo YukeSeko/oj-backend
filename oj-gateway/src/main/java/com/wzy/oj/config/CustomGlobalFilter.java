@@ -69,7 +69,7 @@ public class CustomGlobalFilter implements GlobalFilter, Ordered {
         HttpHeaders headers = request.getHeaders();
         String cookie = headers.getFirst("Cookie");
         if (collectLogin.contains(true)) {
-            String loginUserVo = HttpRequest.get("http://117.72.15.110:88/api/user/get/login")
+            String loginUserVo = HttpRequest.get("http://localhost:88/api/user/get/login")
                     .header("Cookie", cookie)
                     .timeout(20000)
                     .execute().body();

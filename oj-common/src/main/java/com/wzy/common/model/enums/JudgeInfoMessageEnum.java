@@ -21,6 +21,7 @@ public enum JudgeInfoMessageEnum {
     OUTPUT_LIMIT_EXCEEDED("输出溢出", "Output Limit Exceeded"),
     DANGEROUS_OPERATION("危险操作", "Dangerous Operation"),
     RUNTIME_ERROR("运行错误", "Runtime Error"),
+    REMOTE_ERROR("远程执行判题出错", "Remote Run Error"),
     SYSTEM_ERROR("系统错误", "System Error");
 
     private final String text;

@@ -91,7 +91,7 @@ public class JudgeServiceImpl implements JudgeService {
         } catch (Exception e) {
             JudgeInfo judgeInfo = new JudgeInfo();
             //远程代码执行异常
-            judgeInfo.setMessage(JudgeInfoMessageEnum.RUNTIME_ERROR.getValue());
+            judgeInfo.setMessage(JudgeInfoMessageEnum.REMOTE_ERROR.getValue());
             questionSubmitUpdate.setStatus(QuestionSubmitStatusEnum.FAILED.getValue());
             questionSubmitUpdate.setJudgeInfo(JSONUtil.toJsonStr(judgeInfo));
             questionService.updateQuestionSubmitById(questionSubmitUpdate);

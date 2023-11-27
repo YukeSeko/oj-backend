@@ -1,5 +1,7 @@
 package com.wzy.question.controller;
 
+import cn.hutool.core.util.RandomUtil;
+import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.google.gson.Gson;
 import com.wzy.common.annotation.AuthCheck;
@@ -7,6 +9,7 @@ import com.wzy.common.common.BaseResponse;
 import com.wzy.common.common.DeleteRequest;
 import com.wzy.common.common.ErrorCode;
 import com.wzy.common.common.ResultUtils;
+import com.wzy.common.constant.QuestionRedisConstant;
 import com.wzy.common.constant.UserConstant;
 import com.wzy.common.exception.BusinessException;
 import com.wzy.common.exception.ThrowUtils;
@@ -24,12 +27,17 @@ import com.wzy.question.service.QuestionService;
 import com.wzy.question.service.QuestionSubmitService;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
+import org.redisson.Redisson;
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
 import org.springframework.beans.BeanUtils;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /**
  * 题目接口
@@ -47,6 +55,12 @@ public class QuestionController {
 
     @Resource
     private QuestionSubmitService questionSubmitService;
+
+    @Resource
+    private RedisTemplate<String,String> redisTemplate;
+
+    @Resource
+    private RedissonClient redissonClient;
 
     private final static Gson GSON = new Gson();
 
@@ -185,13 +199,40 @@ public class QuestionController {
     @PostMapping("/list/page/vo")
     public BaseResponse<Page<QuestionVO>> listQuestionVOByPage(@RequestBody QuestionQueryRequest questionQueryRequest,
             HttpServletRequest request) {
-        long current = questionQueryRequest.getCurrent();
-        long size = questionQueryRequest.getPageSize();
-        // 限制爬虫
-        ThrowUtils.throwIf(size > 20, ErrorCode.PARAMS_ERROR);
-        Page<Question> questionPage = questionService.page(new Page<>(current, size),
-                questionService.getQueryWrapper(questionQueryRequest));
-        return ResultUtils.success(questionService.getQuestionVOPage(questionPage, request));
+        //引入缓存
+        String questionVo = redisTemplate.opsForValue().get(QuestionRedisConstant.questionPageKey);
+        if (questionVo!=null){
+            //缓存命中的话，直接返回
+            Page<QuestionVO> bean = JSONUtil.toBean(questionVo, Page.class);
+            return ResultUtils.success(bean);
+        }
+        //未命中缓存，加锁进行，解决缓存击穿问题
+        RLock lock = redissonClient.getLock(QuestionRedisConstant.redissonLock);
+        try {
+            boolean b = lock.tryLock(20, 10, TimeUnit.SECONDS);
+            if (b){
+                //尝试获取锁成功成功
+                long current = questionQueryRequest.getCurrent();
+                long size = questionQueryRequest.getPageSize();
+                // 限制爬虫
+                ThrowUtils.throwIf(size > 20, ErrorCode.PARAMS_ERROR);
+                Page<Question> questionPage = questionService.page(new Page<>(current, size),
+                        questionService.getQueryWrapper(questionQueryRequest));
+                Page<QuestionVO> questionVOPage = questionService.getQuestionVOPage(questionPage, request);
+                //设置随机过期时间，解决缓存雪崩的问题
+                redisTemplate.opsForValue().set(QuestionRedisConstant.questionPageKey, String.valueOf(JSONUtil.parse(questionVOPage)), RandomUtil.randomInt(1, 5), TimeUnit.MINUTES);
+                return ResultUtils.success(questionVOPage);
+            }else {
+
+            }
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }finally {
+            //解锁
+            lock.unlock();
+        }
+        //todo 解决缓存更新问题
+        return null;
     }
 
     @ApiOperation("分页获取当前用户创建的资源列表")

@@ -44,7 +44,7 @@ public class MailUtils {
     private boolean sendEmailAuth(String email, String code) {
         if (redisTokenBucket.tryAcquire(email)) {
             // 通过验证验证后，向redis中写入数据
-            redisTemplate.opsForValue().set(email, code, 5 , TimeUnit.MINUTES);
+            redisTemplate.opsForValue().set(email, code, 1 , TimeUnit.MINUTES);
             return true;
         } else {
             log.error("send email to " + email + " rejected due to rate limiting");
