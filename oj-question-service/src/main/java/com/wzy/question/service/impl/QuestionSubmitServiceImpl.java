@@ -23,6 +23,7 @@ import com.wzy.common.model.vo.QuestionSubmitVO;
 import com.wzy.common.model.vo.QuestionVO;
 import com.wzy.common.model.vo.UserVO;
 import com.wzy.common.utils.SqlUtils;
+import com.wzy.question.common.LockUpdateQuestion;
 import com.wzy.question.mapper.QuestionSubmitMapper;
 import com.wzy.question.rabbitmq.MessageProducer;
 import com.wzy.question.service.QuestionService;
@@ -56,6 +57,9 @@ public class QuestionSubmitServiceImpl extends ServiceImpl<QuestionSubmitMapper,
 
     @Resource
     private QuestionSolveService questionSolveService;
+
+    @Resource
+    private LockUpdateQuestion lockUpdateQuestion;
 
     /**
      * 提交题目
@@ -91,7 +95,7 @@ public class QuestionSubmitServiceImpl extends ServiceImpl<QuestionSubmitMapper,
         questionSubmit.setJudgeInfo("{}");
         boolean save = this.save(questionSubmit);
         question.setSubmitNum(question.getSubmitNum() + 1);
-        boolean b = questionService.updateById(question);
+        boolean b = lockUpdateQuestion.lockUpdateQuestion(question);
         if (!save || !b) {
             throw new BusinessException(ErrorCode.SYSTEM_ERROR, "数据插入失败");
         }
@@ -214,7 +218,6 @@ public class QuestionSubmitServiceImpl extends ServiceImpl<QuestionSubmitMapper,
         PerSonalDataVo bean = JSONUtil.toBean(jsonStr, PerSonalDataVo.class);
         return ResultUtils.success(bean);
     }
-
 }
 
 

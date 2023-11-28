@@ -23,6 +23,7 @@ import com.wzy.common.model.entity.User;
 import com.wzy.common.model.vo.PerSonalDataVo;
 import com.wzy.common.model.vo.QuestionSubmitVO;
 import com.wzy.common.model.vo.QuestionVO;
+import com.wzy.question.common.LockUpdateQuestion;
 import com.wzy.question.service.QuestionService;
 import com.wzy.question.service.QuestionSubmitService;
 import io.swagger.annotations.ApiOperation;
@@ -65,6 +66,9 @@ public class QuestionController {
     private final static Gson GSON = new Gson();
 
     private int count = 0;
+
+    @Resource
+    private LockUpdateQuestion lockUpdateQuestion;
 
     // region 增删改查
 
@@ -162,7 +166,7 @@ public class QuestionController {
         // 判断是否存在
         Question oldQuestion = questionService.getById(id);
         ThrowUtils.throwIf(oldQuestion == null, ErrorCode.NOT_FOUND_ERROR);
-        boolean result = questionService.updateById(question);
+        boolean result = lockUpdateQuestion.lockUpdateQuestion(question);
         return ResultUtils.success(result);
     }
 
@@ -320,7 +324,7 @@ public class QuestionController {
         if (!oldQuestion.getUserId().equals(loginUser.getId()) && !userService.isAdmin(loginUser)) {
             throw new BusinessException(ErrorCode.NO_AUTH_ERROR);
         }
-        boolean result = questionService.updateById(question);
+        boolean result = lockUpdateQuestion.lockUpdateQuestion(question);
         return ResultUtils.success(result);
     }
 
