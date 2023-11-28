@@ -29,6 +29,7 @@ import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.redisson.Redisson;
 import org.redisson.api.RLock;
+import org.redisson.api.RReadWriteLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.BeanUtils;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -41,7 +42,6 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * 题目接口
- *
  */
 @RestController
 @Slf4j
@@ -57,19 +57,21 @@ public class QuestionController {
     private QuestionSubmitService questionSubmitService;
 
     @Resource
-    private RedisTemplate<String,String> redisTemplate;
+    private RedisTemplate<String, String> redisTemplate;
 
     @Resource
     private RedissonClient redissonClient;
 
     private final static Gson GSON = new Gson();
 
+    private int count = 0;
+
     // region 增删改查
 
 
     @ApiOperation("获取题目答案")
     @GetMapping("/getQuestionAnswer")
-    public BaseResponse<String> getQuestionAnswer(Long questionId){
+    public BaseResponse<String> getQuestionAnswer(Long questionId) {
         String answer = questionService.getQuestionAnswerById(questionId);
         return ResultUtils.success(answer);
     }
@@ -77,7 +79,7 @@ public class QuestionController {
 
     @ApiOperation("获取前端个人数据总览")
     @GetMapping("/getPersonalData")
-    public BaseResponse<PerSonalDataVo> getPersonalData(HttpServletRequest request){
+    public BaseResponse<PerSonalDataVo> getPersonalData(HttpServletRequest request) {
         User loginUser = userService.getLoginUser(request);
         return questionSubmitService.getPersonalData(loginUser);
     }
@@ -198,47 +200,60 @@ public class QuestionController {
     @ApiOperation("分页获取列表（封装类）")
     @PostMapping("/list/page/vo")
     public BaseResponse<Page<QuestionVO>> listQuestionVOByPage(@RequestBody QuestionQueryRequest questionQueryRequest,
-            HttpServletRequest request) {
+                                                               HttpServletRequest request) {
         //引入缓存
         String questionVo = redisTemplate.opsForValue().get(QuestionRedisConstant.questionPageKey);
-        if (questionVo!=null){
+        if (questionVo != null) {
             //缓存命中的话，直接返回
             Page<QuestionVO> bean = JSONUtil.toBean(questionVo, Page.class);
             return ResultUtils.success(bean);
         }
         //未命中缓存，加锁进行，解决缓存击穿问题
-        RLock lock = redissonClient.getLock(QuestionRedisConstant.redissonLock);
+        RReadWriteLock lock = redissonClient.getReadWriteLock(QuestionRedisConstant.redissonLock);
+        Page<QuestionVO> questionVOPage = null;
         try {
-            boolean b = lock.tryLock(20, 10, TimeUnit.SECONDS);
-            if (b){
-                //尝试获取锁成功成功
-                long current = questionQueryRequest.getCurrent();
-                long size = questionQueryRequest.getPageSize();
-                // 限制爬虫
-                ThrowUtils.throwIf(size > 20, ErrorCode.PARAMS_ERROR);
-                Page<Question> questionPage = questionService.page(new Page<>(current, size),
-                        questionService.getQueryWrapper(questionQueryRequest));
-                Page<QuestionVO> questionVOPage = questionService.getQuestionVOPage(questionPage, request);
-                //设置随机过期时间，解决缓存雪崩的问题
-                redisTemplate.opsForValue().set(QuestionRedisConstant.questionPageKey, String.valueOf(JSONUtil.parse(questionVOPage)), RandomUtil.randomInt(1, 5), TimeUnit.MINUTES);
-                return ResultUtils.success(questionVOPage);
-            }else {
-
+            boolean b = lock.readLock().tryLock(10, 10, TimeUnit.SECONDS);
+            if (b) {
+                String question = redisTemplate.opsForValue().get(QuestionRedisConstant.questionPageKey);
+                if (question != null) {
+                    //拿到锁后，验证缓存是否存在，如果存在，直接返回
+                    Page<QuestionVO> bean = JSONUtil.toBean(question, Page.class);
+                    questionVOPage = bean;
+                }else {
+                    //尝试获取锁成功成功
+                    long current = questionQueryRequest.getCurrent();
+                    long size = questionQueryRequest.getPageSize();
+                    // 限制爬虫
+                    ThrowUtils.throwIf(size > 20, ErrorCode.PARAMS_ERROR);
+                    Page<Question> questionPage = questionService.page(new Page<>(current, size),
+                            questionService.getQueryWrapper(questionQueryRequest));
+                    questionVOPage = questionService.getQuestionVOPage(questionPage, request);
+                    //设置随机过期时间，解决缓存雪崩的问题
+                    redisTemplate.opsForValue().set(QuestionRedisConstant.questionPageKey, String.valueOf(JSONUtil.parse(questionVOPage)), RandomUtil.randomInt(1, 5), TimeUnit.MINUTES);
+                }
+                //解锁
+                lock.readLock().unlock();
             }
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
-        }finally {
-            //解锁
-            lock.unlock();
         }
-        //todo 解决缓存更新问题
-        return null;
+        //没有加入缓存的情况
+//        long current = questionQueryRequest.getCurrent();
+//        long size = questionQueryRequest.getPageSize();
+//        // 限制爬虫
+//        ThrowUtils.throwIf(size > 20, ErrorCode.PARAMS_ERROR);
+//        Page<Question> questionPage = questionService.page(new Page<>(current, size),
+//                questionService.getQueryWrapper(questionQueryRequest));
+//        Page<QuestionVO> questionVOPage = questionService.getQuestionVOPage(questionPage, request);
+//        //设置随机过期时间，解决缓存雪崩的问题
+//        redisTemplate.opsForValue().set(QuestionRedisConstant.questionPageKey, String.valueOf(JSONUtil.parse(questionVOPage)), RandomUtil.randomInt(1, 5), TimeUnit.MINUTES);
+        return ResultUtils.success(questionVOPage);
     }
 
     @ApiOperation("分页获取当前用户创建的资源列表")
     @PostMapping("/my/list/page/vo")
     public BaseResponse<Page<QuestionVO>> listMyQuestionVOByPage(@RequestBody QuestionQueryRequest questionQueryRequest,
-            HttpServletRequest request) {
+                                                                 HttpServletRequest request) {
         if (questionQueryRequest == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
@@ -258,7 +273,7 @@ public class QuestionController {
     @PostMapping("/list/page")
     @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
     public BaseResponse<Page<Question>> listQuestionByPage(@RequestBody QuestionQueryRequest questionQueryRequest,
-                                                   HttpServletRequest request) {
+                                                           HttpServletRequest request) {
         long current = questionQueryRequest.getCurrent();
         long size = questionQueryRequest.getPageSize();
         Page<Question> questionPage = questionService.page(new Page<>(current, size),
@@ -347,7 +362,6 @@ public class QuestionController {
         // 返回脱敏信息
         return ResultUtils.success(questionSubmitService.getQuestionSubmitVOPage(questionSubmitPage, loginUser));
     }
-
 
 
 }
