@@ -9,4 +9,6 @@ public interface QuestionRedisConstant {
     String questionPageKey="oj:questionVoPage";
 
     String redissonLock = "questionRedissonLock";
+
+    String readOnlyLock = "readOnlyLock";
 }

@@ -214,10 +214,13 @@ public class QuestionController {
         }
         //未命中缓存，加锁进行，解决缓存击穿问题
         RReadWriteLock lock = redissonClient.getReadWriteLock(QuestionRedisConstant.redissonLock);
+        RLock readOnlyLock = redissonClient.getLock(QuestionRedisConstant.readOnlyLock);
         Page<QuestionVO> questionVOPage = null;
         try {
             boolean b = lock.readLock().tryLock(10, 10, TimeUnit.SECONDS);
-            if (b) {
+            //尝试加锁，如果当前线程拿到了读锁，再尝试拿可重入锁，这样可以解决读锁多次查询数据库的问题
+            boolean b1 = readOnlyLock.tryLock(10, 10, TimeUnit.SECONDS);
+            if (b && b1) {
                 String question = redisTemplate.opsForValue().get(QuestionRedisConstant.questionPageKey);
                 if (question != null) {
                     //拿到锁后，验证缓存是否存在，如果存在，直接返回
@@ -241,6 +244,7 @@ public class QuestionController {
         }finally {
             //解锁
             lock.readLock().unlock();
+            readOnlyLock.unlock();
         }
         //没有加入缓存的情况
 //        long current = questionQueryRequest.getCurrent();
