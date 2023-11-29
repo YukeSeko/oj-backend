@@ -221,6 +221,7 @@ public class QuestionController {
             //尝试加锁，如果当前线程拿到了读锁，再尝试拿可重入锁，这样可以解决读锁多次查询数据库的问题
             boolean b1 = readOnlyLock.tryLock(10, 10, TimeUnit.SECONDS);
             if (b && b1) {
+                //如果两个锁都拿到了
                 String question = redisTemplate.opsForValue().get(QuestionRedisConstant.questionPageKey);
                 if (question != null) {
                     //拿到锁后，验证缓存是否存在，如果存在，直接返回
