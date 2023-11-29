@@ -224,7 +224,7 @@ public class QuestionController {
                     Page<QuestionVO> bean = JSONUtil.toBean(question, Page.class);
                     questionVOPage = bean;
                 }else {
-                    //尝试获取锁成功成功
+                    //尝试获取锁成功
                     long current = questionQueryRequest.getCurrent();
                     long size = questionQueryRequest.getPageSize();
                     // 限制爬虫
@@ -235,11 +235,12 @@ public class QuestionController {
                     //设置随机过期时间，解决缓存雪崩的问题
                     redisTemplate.opsForValue().set(QuestionRedisConstant.questionPageKey, String.valueOf(JSONUtil.parse(questionVOPage)), RandomUtil.randomInt(1, 5), TimeUnit.MINUTES);
                 }
-                //解锁
-                lock.readLock().unlock();
             }
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
+        }finally {
+            //解锁
+            lock.readLock().unlock();
         }
         //没有加入缓存的情况
 //        long current = questionQueryRequest.getCurrent();
